@@ -1,0 +1,34 @@
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-21 18:33:37 | INFO | Got anonymous API key: 6637b777-1020-457c-a9b7-b2b10907716f
+2026-09-21 18:33:37 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-21 18:33:38 | INFO | Successfully fetched 25 environment(s) from API
+COUNT: 25
+game_id                  short    title
+----------------------------------------------------------------------
+ar25-0c556536            ar25     AR25
+bp35-0a0ad940            bp35     BP35
+cd82-fb555c5d            cd82     CD82
+cn04-2fe56bfb            cn04     CN04
+dc22-fdcac232            dc22     DC22
+ft09-0d8bbf25            ft09     FT09
+g50t-5849a774            g50t     G50T
+ka59-38d34dbb            ka59     KA59
+lf52-271a04aa            lf52     LF52
+lp85-305b61c3            lp85     LP85
+ls20-9607627b            ls20     LS20
+m0r0-492f87ba            m0r0     M0R0
+r11l-495a7899            r11l     R11L
+re86-8af5384d            re86     RE86
+s5i5-18d95033            s5i5     S5I5
+sb26-7fbdac44            sb26     SB26
+sc25-635fd71a            sc25     SC25
+sk48-d8078629            sk48     SK48
+sp80-589a99af            sp80     SP80
+su15-1944f8ab            su15     SU15
+tn36-ef4dde99            tn36     TN36
+tr87-cd924810            tr87     TR87
+tu93-0768757b            tu93     TU93
+vc33-5430563c            vc33     VC33
+wa30-ee6fef47            wa30     WA30
+
+SHORT_IDS: ['ar25', 'bp35', 'cd82', 'cn04', 'dc22', 'ft09', 'g50t', 'ka59', 'lf52', 'lp85', 'ls20', 'm0r0', 'r11l', 're86', 's5i5', 'sb26', 'sc25', 'sk48', 'sp80', 'su15', 'tn36', 'tr87', 'tu93', 'vc33', 'wa30']
