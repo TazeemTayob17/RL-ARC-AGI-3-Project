@@ -1,8 +1,0 @@
-OFFLINE mode: environments discovered = 25
-ids: ['ar25', 'bp35', 'cd82', 'cn04', 'dc22', 'ft09', 'g50t', 'ka59', 'lf52', 'lp85', 'ls20', 'm0r0', 'r11l', 're86', 's5i5', 'sb26', 'sc25', 'sk48', 'sp80', 'su15', 'tn36', 'tr87', 'tu93', 'vc33', 'wa30']
-2026-09-21 18:44:30 | INFO | Created new scorecard: 64862cb0-ecf2-4d0d-a9e2-c3f8064c5eaa
-2026-09-21 18:44:30 | INFO | Found latest version of ls20: ls20-9607627b (downloaded: 2026-09-21 16:39:03.756139+00:00)
-2026-09-21 18:44:30 | INFO | Successfully loaded game class Ls20 from environment_files\ls20\9607627b\ls20.py
-reset ok: state = NOT_FINISHED | levels_completed = 0 | win_levels = 7 | n_frames = 1
-20 steps ok: state = NOT_FINISHED
-OFFLINE: PASS
