@@ -1,0 +1,14 @@
+{
+  "python": "3.12.14 (main, Sep  1 2026, 14:17:39) [MSC v.1944 64 bit (AMD64)]",
+  "os": "Windows-11-10.0.26200-SP0",
+  "machine": "AMD64",
+  "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+  "cpu_count": 8,
+  "packages": {
+    "arc-agi": "0.9.9",
+    "arcengine": "0.9.3",
+    "numpy": "2.5.3",
+    "pydantic": "2.13.5"
+  },
+  "git_commit": "f27ddade71a74b1ca8fcf73124d5cfdb7d6284c2"
+}
