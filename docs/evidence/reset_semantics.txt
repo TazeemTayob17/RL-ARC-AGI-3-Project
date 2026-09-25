@@ -1,0 +1,13 @@
+replayed to level 1 at step index 1915; commands so far {'step': 1916, 'reset': 5}
+{"tag": "A. at level-1 start (replay end)", "state": "NOT_FINISHED", "levels_completed": 1, "win_levels": 6, "n_frames": 2, "full_reset": false, "avail": [6], "eq_level1_first": true, "eq_level0_init": false}
+{"tag": "B. after 1 action (ACTION6)", "state": "NOT_FINISHED", "levels_completed": 1, "win_levels": 6, "n_frames": 1, "full_reset": false, "avail": [6], "eq_level1_first": true, "eq_level0_init": false}
+{"tag": "C. reset #1 (mid level 1)", "state": "NOT_FINISHED", "levels_completed": 1, "win_levels": 6, "n_frames": 1, "full_reset": false, "avail": [6], "eq_level1_first": true, "eq_level0_init": false}
+{"tag": "D. reset #2 immediately", "state": "NOT_FINISHED", "levels_completed": 0, "win_levels": 6, "n_frames": 1, "full_reset": true, "avail": [6], "eq_level1_first": false, "eq_level0_init": true}
+{"tag": "E. terminal after 429 more actions", "state": "GAME_OVER", "levels_completed": 0, "win_levels": 6, "n_frames": 1, "full_reset": false, "avail": [6]}
+{"tag": "F. reset after GAME_OVER", "state": "NOT_FINISHED", "levels_completed": 0, "win_levels": 6, "n_frames": 1, "full_reset": false, "avail": [6], "eq_level1_first": false, "eq_level0_init": true}
+{"tag": "G. second reset after that", "state": "NOT_FINISHED", "levels_completed": 0, "win_levels": 6, "n_frames": 1, "full_reset": true, "avail": [6], "eq_level1_first": false, "eq_level0_init": true}
+--- part 2: GAME_OVER at level 1 ---
+{"tag": "H. terminal at level>=1 after 274 more actions", "state": "GAME_OVER", "levels_completed": 1, "win_levels": 6, "n_frames": 1, "full_reset": false, "avail": [6]}
+{"tag": "I. reset after GAME_OVER (from level 1)", "state": "NOT_FINISHED", "levels_completed": 1, "win_levels": 6, "n_frames": 1, "full_reset": false, "avail": [6], "eq_level1_first": true, "eq_level0_init": false}
+{"tag": "J. second reset after that", "state": "NOT_FINISHED", "levels_completed": 0, "win_levels": 6, "n_frames": 1, "full_reset": true, "avail": [6], "eq_level1_first": false, "eq_level0_init": true}
+env commands issued: {'step': 4536, 'reset': 16}

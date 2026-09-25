@@ -1,0 +1,10 @@
+click (x,y)    changed (row,col) cells                 
+----------------------------------------------------------
+( 0, 0)        [[0, 63]]                               
+(10, 0)        [[0, 63]]                               
+( 0,10)        [[0, 63]]                               
+(63, 0)        [[0, 63]]                               
+( 0,63)        [[0, 63]]                               
+(20,40)        [[0, 63]]                               
+
+Interpretation: if click (x,y) changes cell (row=y, col=x) -> x=column, y=row, origin top-left.

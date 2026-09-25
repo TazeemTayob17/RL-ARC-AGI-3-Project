@@ -1,0 +1,55 @@
+GameAction members:
+  RESET    id=0 type=SimpleAction   simple=True complex=False
+  ACTION1  id=1 type=SimpleAction   simple=True complex=False
+  ACTION2  id=2 type=SimpleAction   simple=True complex=False
+  ACTION3  id=3 type=SimpleAction   simple=True complex=False
+  ACTION4  id=4 type=SimpleAction   simple=True complex=False
+  ACTION5  id=5 type=SimpleAction   simple=True complex=False
+  ACTION6  id=6 type=ComplexAction  simple=False complex=True
+  ACTION7  id=7 type=SimpleAction   simple=True complex=False
+ACTION7 exists    : True
+all_simple        : ['RESET', 'ACTION1', 'ACTION2', 'ACTION3', 'ACTION4', 'ACTION5', 'ACTION7']
+all_complex       : ['ACTION6']
+
+game    win_levels available_actions        n_frames@reset
+--------------------------------------------------------------
+ar25             8 A1,A2,A3,A4,A5,A6,A7                  1
+bp35             9 A3,A4,A6,A7                           2
+cd82             6 A1,A2,A3,A4,A5,A6                     1
+cn04             6 A1,A2,A3,A4,A5,A6                     1
+dc22             6 A1,A2,A3,A4,A6                        1
+ft09             6 A6                                    1
+g50t             7 A1,A2,A3,A4,A5                        1
+ka59             7 A1,A2,A3,A4,A6                        1
+lf52            10 A1,A2,A3,A4,A6,A7                     2
+lp85             8 A6                                    1
+ls20             7 A1,A2,A3,A4                           1
+m0r0             6 A1,A2,A3,A4,A5,A6                     1
+r11l             6 A6                                    1
+re86             8 A1,A2,A3,A4,A5                        1
+s5i5             8 A6                                    1
+sb26             8 A5,A6,A7                              1
+sc25             6 A1,A2,A3,A4,A6                        1
+sk48             8 A1,A2,A3,A4,A6,A7                     1
+sp80             6 A1,A2,A3,A4,A5,A6                     1
+su15             9 A6,A7                                 1
+tn36             7 A6                                    1
+tr87             6 A1,A2,A3,A4                           1
+tu93             9 A1,A2,A3,A4                           1
+vc33             7 A6                                    1
+wa30             9 A1,A2,A3,A4,A5                        1
+
+DISTINCT available_actions sets:
+  [1, 2, 3, 4] -> ['ls20', 'tr87', 'tu93']
+  [1, 2, 3, 4, 5] -> ['g50t', 're86', 'wa30']
+  [1, 2, 3, 4, 5, 6] -> ['cd82', 'cn04', 'm0r0', 'sp80']
+  [1, 2, 3, 4, 5, 6, 7] -> ['ar25']
+  [1, 2, 3, 4, 6] -> ['dc22', 'ka59', 'sc25']
+  [1, 2, 3, 4, 6, 7] -> ['lf52', 'sk48']
+  [3, 4, 6, 7] -> ['bp35']
+  [5, 6, 7] -> ['sb26']
+  [6] -> ['ft09', 'lp85', 'r11l', 's5i5', 'tn36', 'vc33']
+  [6, 7] -> ['su15']
+
+Games exposing ACTION6 (click): ['ar25', 'bp35', 'cd82', 'cn04', 'dc22', 'ft09', 'ka59', 'lf52', 'lp85', 'm0r0', 'r11l', 's5i5', 'sb26', 'sc25', 'sk48', 'sp80', 'su15', 'tn36', 'vc33']
+Games exposing ACTION7 (undo): ['ar25', 'bp35', 'lf52', 'sb26', 'sk48', 'su15']

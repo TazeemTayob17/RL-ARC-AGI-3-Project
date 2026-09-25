@@ -449,14 +449,14 @@ Dates are targets. If a check fails, fix it before spending the next stage's exp
 
 | Dates | Phase | Acceptance evidence |
 |---|---|---|
-| 22-24 Sep | Interface, exposure audit, scoring, submission pipeline | Split recorded; reset probes; scorer route; both teams registered; random agent successfully competition-evaluated; current limits documented |
-| 24 Sep-1 Oct | Minimal implementation, architecture integration, and calibration | Both learners solve synthetic checks; submission callbacks preserve learning; masks/rewards/boundaries verified; provisional V0 is replaceable through configuration; architecture-search finalists can be inserted without changing unrelated infrastructure; complete compute estimate |
-| 1-6 Oct | Baselines | Matched V0 results, random references, updates-disabled control, official scoring evidence; I1 chosen from diagnostics |
-| 6-12 Oct | Improvement 1 | V1 compared with V0 separately for both algorithms; I2 chosen from those results |
-| 12-18 Oct | Improvement 2 | V2 results; development-only final selection; configurations and ablations frozen |
-| 18-23 Oct | Final evaluation and evidence | Reserved-from-further-tuning public evaluation, ablations, all six required score records, representative trajectories, final tables; unseen claims reserved for Kaggle evaluation |
-| By 24 Oct | Both Kaggle submissions | Successfully evaluated nominated code and submitted Paper Track write-up; links, identifiers, timestamps, saved copies |
-| 24-27 Oct | Report and Moodle package verification | Eight-page compliant report, matching notebook, evidence, contribution statement, credential-free ZIP |
+| 22-24 Sep | **Phase 1** — Interface, exposure audit, scoring, submission pipeline | Split recorded; reset probes; scorer route; both teams registered; random agent successfully competition-evaluated; current limits documented |
+| 24 Sep-1 Oct | **Phase 2** — Minimal implementation, architecture integration, and calibration | Both learners solve synthetic checks; submission callbacks preserve learning; masks/rewards/boundaries verified; provisional V0 is replaceable through configuration; architecture-search finalists can be inserted without changing unrelated infrastructure; complete compute estimate |
+| 1-6 Oct | **Phase 3** — Baselines | Matched V0 results, random references, updates-disabled control, official scoring evidence; I1 chosen from diagnostics |
+| 6-12 Oct | **Phase 4** — Improvement 1 | V1 compared with V0 separately for both algorithms; I2 chosen from those results |
+| 12-18 Oct | **Phase 5** — Improvement 2 | V2 results; development-only final selection; configurations and ablations frozen |
+| 18-23 Oct | **Phase 6** — Final evaluation and evidence | Reserved-from-further-tuning public evaluation, ablations, all six required score records, representative trajectories, final tables; unseen claims reserved for Kaggle evaluation |
+| By 24 Oct | **Phase 7** — Both Kaggle submissions | Successfully evaluated nominated code and submitted Paper Track write-up; links, identifiers, timestamps, saved copies |
+| 24-27 Oct | **Phase 8** — Report and Moodle package verification | Eight-page compliant report, matching notebook, evidence, contribution statement, credential-free ZIP |
 
 Start the report outline during baseline work and draft results after every stage. Reserve about half the main-content space for results, ablations, and analysis. Essential evidence must fit within eight pages; supplementary material cannot replace it.
 
