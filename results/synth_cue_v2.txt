@@ -1,0 +1,5 @@
+cue    random_type                  reward/action whole=0.0346 final-third=0.0296 per-seed final=[0.0296]  [4s]
+cue    ppo                          reward/action whole=0.2900 final-third=0.3975 per-seed final=[0.3975]  [293s]
+cue    dqn                          reward/action whole=0.0554 final-third=0.0559 per-seed final=[0.0559]  [1018s]
+cue    ppo(updates disabled)        reward/action whole=0.0350 final-third=0.0360 per-seed final=[0.036]  [1108s]
+cue    dqn(updates disabled)        reward/action whole=0.0090 final-third=0.0023 per-seed final=[0.0023]  [1166s]

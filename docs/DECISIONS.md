@@ -63,3 +63,78 @@ Single seed: descriptive only. Replicate over 3 seeds in Phase 3.
 3. Confirm or change `configs/splits.json` (plan question 3), and supply the architecture-development column of `docs/EXPOSURE.md`.
 4. Ask the tutor plan questions 1-2 (DQN/PPO eligibility; local-score evidence).
 5. Before any submission, scan for credentials: the notebook contains the starter's placeholder `ARC_API_KEY=test-key-123` for the local gateway sidecar, which is not a secret.
+
+---
+
+# Phase 2 record (minimal implementation, architecture integration, calibration)
+
+Build order and pass conditions are in `docs/IMPLEMENTATION_BRIEF.md`. All 44 tests in `tests/` pass
+(`python -m pytest tests`, about 5 min). Code: `src/{adapter,learner,config,model,dqn,ppo,run,synthetic,bridge}.py`,
+`kaggle/learner_agent.py`, scripts in `scripts/`.
+
+| Step | Result | Evidence |
+|---|---|---|
+| 1 Adapter, mapping, masks | Pass. Index round trip for all 4102 actions; click placement matches the SDK (x=column, y=row); masks correct on click-only/keyboard-only/mixed; illegal actions rejected; our budget counter equals the official scorecard | `tests/test_adapter.py` |
+| 2 Run controller + random policies | Pass. Budget stops exactly (no trailing reset); same seed reproduces, different seed differs; records carry official scorecard | `tests/test_run.py` |
+| 3 Reward, progress, boundaries | Pass. Replaying the recorded ft09 trajectory gives exactly one reward at step 1915; never two consecutive resets; history cleared at reset while counters/high-water persist | `tests/test_lifecycle.py` |
+| 4 Config, identity, checkpoints | Pass. Full resolved config + hash + commit + versions stored; reload reconstructs the exact architecture and weights | `tests/test_learners.py` |
+| 5 V0 model + interfaces | Pass. `onehotcnn_stack1` and a structurally different test-only MLP swap in by config with no other file changed | `tests/test_learners.py` |
+| 6 DQN | Pass. Target computed exactly as masked Double DQN in a hand-checked case; finite with terminal and fully-masked next states; type-balanced epsilon (click share ~1/6, not ~99.9%) | `tests/test_learners.py` |
+| 7 PPO | Pass. Joint log-prob and entropy agree with an independent full-joint calculation; illegal actions get ~0 probability while every legal action stays reachable; GAE stops at terminals; finite on masked/terminal data; partial final rollout processed | `tests/test_learners.py` |
+| 8 Synthetic checks | Pass with one partial result, below | `docs/evidence/synthetic_checks.txt`, `tests/test_cue_capacity.py` |
+| 9 Kaggle lifecycle | Pass. Through the real `Agent.main()` loop the learner receives each outcome before the next action, sends only legal actions, and its weights persist and update; official scorecard count matches | `tests/test_bridge.py` |
+| 10 Calibration | Done but **preliminary** (shared CPU, laptop, no GPU); must be re-run on the cluster | `docs/CALIBRATION.md` |
+
+## Synthetic learning checks (1 seed, so descriptive)
+Reward per action, final third of the run (random = same task with the type-uniform random policy):
+
+| Task | random | PPO | DQN | PPO, updates off | DQN, updates off |
+|---|---|---|---|---|---|
+| nav (4000 steps) | 0.011 | 0.144 | 0.131 | 0.005 | 0.000 |
+| click (4000) | 0.032 | 0.788 | 0.959 | 0.036 | 0.002 |
+| distant cue (8000) | 0.030 | 0.398 | **0.056** | 0.036 | 0.002 |
+
+- Both learners solve nav and click; both controls stay at or below random.
+- **Distant cue, RL:** PPO improves clearly but stays below the 0.5 ceiling for a policy that finds the squares yet
+  ignores the cue; **DQN improves only marginally (0.030 to 0.056) in 8000 steps.** This is a partial result, not a pass
+  for DQN on this task. Not investigated further (cost).
+- **Distant cue, architecture path:** a supervised check shows V0's global-context path reaches the click head
+  (over 0.9 of the probability on the cued square; the same model with the context path zeroed stays under 0.6).
+  So V0 does satisfy the plan's purpose for its whole-board context; the RL shortfall is sample efficiency, not wiring.
+- **Lesson recorded:** my first cue task was wrong, not V0. It asked the network to tell two *identical-looking* squares
+  apart by position, which a fully convolutional click head with one global vector cannot do, so PPO sat at ~0.5 for
+  12,000 steps. The task was redesigned so the cue selects a *colour* (locally visible, cue out of the 9x9 field).
+  A `pool_grid` variant I tried first was removed: it was not the cause.
+- Synthetic DQN uses lr 5e-4, warm-up 300, target update every 250 steps (a 4000-step run cannot use the plan's ARC
+  schedule). These are synthetic-only settings and are stored in each run's config.
+
+## Findings that change later work
+1. **Compute is dominated by the CNN, and DQN is the expensive learner.** Default V0 (32 channels): about 0.9 s per DQN
+   gradient step, 3.3 h for one 50k-action DQN run vs 1.2 h for PPO (shared laptop). Width, `train_every`, B and
+   parallel workers are the levers; see `docs/CALIBRATION.md`. Cheaper exact optimisations were applied (about 1.3x
+   and 1.2x, results unchanged).
+2. **The framework path counts commands differently from direct SDK use.** Direct: first reset is free. Framework:
+   `make()` already starts the game, no initial RESET is sent, every command is counted and `MAX_ACTIONS` enforces the
+   budget with `MAX_ACTIONS + 1` loop iterations; the agent never sees the outcome of its last action. Both paths are
+   tested against the official scorecard. `kaggle/learner_agent.py` therefore sets `MAX_ACTIONS = budget - 1`.
+3. **Another project's training job shares this machine** (`ResearchProject`, `training.quick_run`, started before
+   my runs). It is not ours and I did not touch it; it made all timings pessimistic. Each run record now stores
+   system CPU load before the run.
+
+## Choices made (routine, reversible)
+- No Gymnasium; own small DQN/PPO in PyTorch (CPU build pinned; pin the GPU build when cluster details are known).
+- `prev_valid` dropped from the observation contract (never needed: the adapter never sends a step in GAME_OVER).
+- Level transitions keep the previous frame (history is not cleared between levels; `info["level_up"]` flags them).
+- Game seed fixed at 0 (`env_seed`); the run seed controls the learner, so seeds compare learners on the same game.
+- Replay stores all four frames per transition (783 MB at 50k capacity); indexed sharing deferred.
+- DQN mask value is a finite -1e9 and terminals use `torch.where`, so `0 * -inf` cannot occur.
+- Frame-change rate, unique-state rate and repeated-state transitions are recorded as separate diagnostics.
+
+## Still open (not Phase 2 blockers)
+- **Confirm `configs/splits.json`** (proposed). Calibration used `ft09`, `g50t`, `ar25`, all development games in
+  the proposed split; if the split changes they may move, but calibration is timing only.
+- Fill the architecture-development column of `docs/EXPOSURE.md`; ask the tutor plan questions 1-2.
+- Cluster details (GPU, CPU, Python, internet, scheduler) -> re-run calibration there and pin torch.
+- Kaggle runtime, action limit and reset rules; random-agent Kaggle submission (deferred by choice).
+- Reset behaviour is verified on ft09 only.
+- Architecture-selection results -> matched reward-based validation before V0 is frozen.

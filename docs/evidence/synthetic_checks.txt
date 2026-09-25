@@ -1,0 +1,27 @@
+Synthetic learning checks (Phase 2 step 8). Reward per action; 'final-third' = last third of the run. 1 seed each, budget noted.
+Settings: 8-channel V0 CNN; DQN lr 5e-4, warmup 300, target update 250 (synthetic-only overrides of the plan's ARC settings); PPO plan defaults.
+
+== nav (budget 4000)
+nav    random_type                  reward/action whole=0.0140 final-third=0.0105 per-seed final=[0.0105]  [3s]
+nav    ppo                          reward/action whole=0.0838 final-third=0.1440 per-seed final=[0.144]  [144s]
+nav    dqn                          reward/action whole=0.0872 final-third=0.1305 per-seed final=[0.1305]  [485s]
+nav    ppo(updates disabled)        reward/action whole=0.0080 final-third=0.0053 per-seed final=[0.0053]  [523s]
+nav    dqn(updates disabled)        reward/action whole=0.0035 final-third=0.0000 per-seed final=[0.0]  [549s]
+
+== click (budget 4000)
+click  random_type                  reward/action whole=0.0350 final-third=0.0323 per-seed final=[0.0323]  [3s]
+click  ppo                          reward/action whole=0.3650 final-third=0.7883 per-seed final=[0.7883]  [157s]
+click  dqn                          reward/action whole=0.7618 final-third=0.9593 per-seed final=[0.9593]  [512s]
+click  ppo(updates disabled)        reward/action whole=0.0350 final-third=0.0360 per-seed final=[0.036]  [558s]
+click  dqn(updates disabled)        reward/action whole=0.0057 final-third=0.0015 per-seed final=[0.0015]  [585s]
+
+== cue, redesigned task (budget 8000)
+cue    random_type                  reward/action whole=0.0346 final-third=0.0296 per-seed final=[0.0296]  [4s]
+cue    ppo                          reward/action whole=0.2900 final-third=0.3975 per-seed final=[0.3975]  [293s]
+cue    dqn                          reward/action whole=0.0554 final-third=0.0559 per-seed final=[0.0559]  [1018s]
+cue    ppo(updates disabled)        reward/action whole=0.0350 final-third=0.0360 per-seed final=[0.036]  [1108s]
+cue    dqn(updates disabled)        reward/action whole=0.0090 final-third=0.0023 per-seed final=[0.0023]  [1166s]
+
+Superseded: the first cue design (two identical squares told apart by position) is unsolvable for a translation-equivariant click head; PPO at 4000/12000 steps sat at ~0.44/0.49, ~ the 0.5 local-only ceiling. See docs/DECISIONS.md.
+
+Supervised distant-cue capacity check: tests/test_cue_capacity.py (full model >0.9 mass on cued square; context-ablated <0.6).

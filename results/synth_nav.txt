@@ -1,0 +1,5 @@
+nav    random_type                  reward/action whole=0.0140 final-third=0.0105 per-seed final=[0.0105]  [3s]
+nav    ppo                          reward/action whole=0.0838 final-third=0.1440 per-seed final=[0.144]  [144s]
+nav    dqn                          reward/action whole=0.0872 final-third=0.1305 per-seed final=[0.1305]  [485s]
+nav    ppo(updates disabled)        reward/action whole=0.0080 final-third=0.0053 per-seed final=[0.0053]  [523s]
+nav    dqn(updates disabled)        reward/action whole=0.0035 final-third=0.0000 per-seed final=[0.0]  [549s]

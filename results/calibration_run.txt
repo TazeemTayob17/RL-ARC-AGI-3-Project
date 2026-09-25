@@ -1,0 +1,45 @@
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:11:43 | INFO | Got anonymous API key: 0223b8a4-54f4-4b0b-a35d-2e9aea649e9c
+2026-09-25 16:11:43 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:11:44 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:11:55 | INFO | Created new scorecard: 31becaf3-d754-42c8-b6c1-db5a6be4c909
+2026-09-25 16:11:56 | INFO | Successfully fetched metadata for game ft09
+2026-09-25 16:11:56 | INFO | Successfully loaded game class Ft09 from environment_files\ft09\0d8bbf25\ft09.py
+dqn  ft09  ch=32  wall=  313.5s env=  2.9ms/act act= 11.1ms/act grad_steps= 325 peakRSS=552MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:17:11 | INFO | Got anonymous API key: ec409fe0-d0e9-4c1e-9269-e56870c63adb
+2026-09-25 16:17:11 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:17:13 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:17:13 | INFO | Created new scorecard: e92b8b1c-c5ce-4fcb-8a85-1a08ecfffcd1
+2026-09-25 16:17:14 | INFO | Successfully fetched metadata for game ft09
+ppo  ft09  ch=32  wall=  136.6s env=  4.2ms/act act= 16.4ms/act grad_steps= 192 peakRSS=552MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:19:31 | INFO | Got anonymous API key: 27a524c0-06eb-4260-9e8e-ae396067f12d
+2026-09-25 16:19:31 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:19:32 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:19:33 | INFO | Created new scorecard: ec71c786-879d-4e4d-8441-49c204aad6ac
+2026-09-25 16:19:34 | INFO | Successfully fetched metadata for game g50t
+2026-09-25 16:19:34 | INFO | Successfully loaded game class G50t from environment_files\g50t\5849a774\g50t.py
+dqn  g50t  ch=32  wall=  316.4s env=  3.6ms/act act= 12.1ms/act grad_steps= 323 peakRSS=560MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:24:51 | INFO | Got anonymous API key: c3d634e1-2a8f-4b87-a8de-f0a49f88ff25
+2026-09-25 16:24:51 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:24:52 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:24:53 | INFO | Created new scorecard: 93377885-ea70-4856-8887-0401b84f11ae
+2026-09-25 16:24:53 | INFO | Successfully fetched metadata for game g50t
+ppo  g50t  ch=32  wall=  132.0s env=  4.2ms/act act= 14.2ms/act grad_steps= 192 peakRSS=560MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:27:06 | INFO | Got anonymous API key: cb771902-a326-4d64-ac06-a56b5c9133f8
+2026-09-25 16:27:06 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:27:07 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:27:08 | INFO | Created new scorecard: 401d3123-e5ab-4a3c-98e0-fbe2af6dfa80
+2026-09-25 16:27:09 | INFO | Successfully fetched metadata for game ar25
+2026-09-25 16:27:09 | INFO | Successfully loaded game class Ar25 from environment_files\ar25\0c556536\ar25.py
+dqn  ar25  ch=32  wall=  315.6s env=  2.8ms/act act= 12.3ms/act grad_steps= 323 peakRSS=566MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:32:25 | INFO | Got anonymous API key: 16d94731-3271-450e-acf5-c7dd9e0246d2
+2026-09-25 16:32:25 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:32:26 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:32:27 | INFO | Created new scorecard: 02ee9fc7-8db7-4871-8827-d0d417cc2676
+2026-09-25 16:32:27 | INFO | Successfully fetched metadata for game ar25
+ppo  ar25  ch=32  wall=  139.0s env=  2.9ms/act act= 16.8ms/act grad_steps= 192 peakRSS=566MB  status=budget

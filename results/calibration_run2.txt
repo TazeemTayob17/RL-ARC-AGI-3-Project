@@ -1,0 +1,29 @@
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:35:16 | INFO | Got anonymous API key: a3f5cbb6-7928-4ec3-be4a-6362324eabbd
+2026-09-25 16:35:16 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:35:17 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:35:29 | INFO | Created new scorecard: 45398daa-a74c-42e4-af48-7266dca841b7
+2026-09-25 16:35:30 | INFO | Successfully fetched metadata for game ft09
+2026-09-25 16:35:30 | INFO | Successfully loaded game class Ft09 from environment_files\ft09\0d8bbf25\ft09.py
+dqn  ft09  ch=16  wall=  190.3s env=  4.2ms/act act=  9.7ms/act grad_steps= 325 peakRSS=492MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:38:41 | INFO | Got anonymous API key: 73714ede-08a7-472d-968e-a96fbee18674
+2026-09-25 16:38:41 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:38:42 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:38:43 | INFO | Created new scorecard: e2849f68-c815-41e6-ae06-c0574544c058
+2026-09-25 16:38:43 | INFO | Successfully fetched metadata for game ft09
+ppo  ft09  ch=16  wall=   83.5s env=  4.1ms/act act= 13.0ms/act grad_steps= 192 peakRSS=499MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:40:08 | INFO | Got anonymous API key: 552c395a-c90b-478e-a843-b15f1af60297
+2026-09-25 16:40:08 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:40:09 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:40:09 | INFO | Created new scorecard: 65bd6e69-ab31-4cd8-9964-f10807d02201
+2026-09-25 16:40:10 | INFO | Successfully fetched metadata for game ft09
+dqn  ft09  ch=8   wall=  136.2s env=  3.6ms/act act=  7.6ms/act grad_steps= 323 peakRSS=499MB  status=budget
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-25 16:42:27 | INFO | Got anonymous API key: e1f7c332-1968-4970-8265-d805a0427efb
+2026-09-25 16:42:27 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-25 16:42:28 | INFO | Successfully fetched 25 environment(s) from API
+2026-09-25 16:42:28 | INFO | Created new scorecard: f47b7884-82a1-468b-a305-cd18009e7696
+2026-09-25 16:42:29 | INFO | Successfully fetched metadata for game ft09
+ppo  ft09  ch=8   wall=   62.2s env=  4.2ms/act act= 11.2ms/act grad_steps= 192 peakRSS=499MB  status=budget
