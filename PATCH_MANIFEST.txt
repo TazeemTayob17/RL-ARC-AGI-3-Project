@@ -1,0 +1,24 @@
+DQN V1 baseline patch
+
+Existing DQN remains V0. V1 is selected by RunConfig(algo="dqn", version="V1").
+No PPO, adapter, bridge, or existing DQN implementation is replaced.
+
+Changed existing files:
+- src/config.py
+- src/run.py
+- scripts/run_framework_local.py
+
+New files:
+- src/dqn_v1/*
+- assets/dqn_v1/checkpoints/* (five cross-fold seed-11 frozen effect-model checkpoints)
+- scripts/compare_dqn_baselines.sh
+- tests/test_dqn_v1.py
+
+Validation performed before packaging:
+- python -m compileall: PASS
+- pytest tests/test_dqn_v1.py tests/test_synthetic.py: 5 passed
+- frozen prior parity against original selected architecture: exact
+- structured exploration parity against original D14 for 50 sequential decisions: exact
+
+Important scope:
+The selected final-ablation result used fold-specific public-game checkpoints. V1 therefore intentionally refuses unknown game IDs until a single deployment checkpoint is trained/exported. This avoids silently changing the evaluated baseline.

@@ -30,6 +30,28 @@ ALGO_DEFAULTS = {
 }
 ALGOS = tuple(ALGO_DEFAULTS)
 
+DQN_V1_DEFAULTS = {
+    "gamma": 0.99,
+    "learning_rate": 1e-4,
+    "batch_size": 8,
+    "replay_capacity": 4096,
+    "warmup_actions": 16,
+    "train_every_actions": 8,
+    "target_update_actions": 80,
+    "gradient_clip_norm": 10.0,
+    "hidden_dim": 128,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.1,
+    "epsilon_decay_actions": 400,
+    "per_alpha": 0.6,
+    "per_beta_start": 0.4,
+    "per_beta_end": 1.0,
+    "per_eps": 1e-4,
+    "c51_atoms": 51,
+    "c51_vmin": 0.0,
+    "c51_vmax": 5.0,
+}
+
 
 @dataclass
 class RunConfig:
@@ -50,7 +72,8 @@ class RunConfig:
         if self.algo not in ALGOS:
             raise ValueError(f"unknown algo {self.algo!r}")
         arch = {**ARCH_DEFAULTS[self.arch.get("id", "onehotcnn_stack2")], **self.arch}
-        params = {**ALGO_DEFAULTS[self.algo], **self.params}
+        base_params = DQN_V1_DEFAULTS if self.algo == "dqn" and self.version.upper() == "V1" else ALGO_DEFAULTS[self.algo]
+        params = {**base_params, **self.params}
         return RunConfig(**{**asdict(self), "arch": arch, "params": params})
 
     def to_dict(self) -> dict:
@@ -92,11 +115,12 @@ def identity(cfg: RunConfig, model_info: dict | None = None) -> dict:
         "run_id": c.run_id(),
         "config_hash": c.hash(),
         "config": c.to_dict(),
-        "architecture_id": c.arch["id"],
+        "architecture_id": (model_info or {}).get("architecture", c.arch["id"]),
         "observation_contract": {"frame": "int8[64,64]", "history": "previous step's last frame",
                                  "extras": "prev_action, progress, high_water, mask"},
-        "action_representation": "flat4102: 6 simple + 4096 clicks; type-balanced exploration",
-        "auxiliary_objectives": [], "memory": None,
+        "action_representation": (model_info or {}).get("action_representation", "flat4102: 6 simple + 4096 clicks; type-balanced exploration"),
+        "auxiliary_objectives": (model_info or {}).get("auxiliary_objectives", []),
+        "memory": (model_info or {}).get("memory"),
         "budget_accounting": "scorer-rule actions (steps + non-first resets)",
         "split_hash": _split_hash(),
         "code_commit": _git_commit(),
