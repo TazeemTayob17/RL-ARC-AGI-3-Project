@@ -138,3 +138,13 @@ Reward per action, final third of the run (random = same task with the type-unif
 - Kaggle runtime, action limit and reset rules; random-agent Kaggle submission (deferred by choice).
 - Reset behaviour is verified on ft09 only.
 - Architecture-selection results -> matched reward-based validation before V0 is frozen.
+
+---
+
+# Phase 3 closure
+
+The group accepted the teammate-selected DQN and existing PPO as assignment starting baselines, the current development/reserved split, and 1500 scorer-counted actions. Tutor approval was reported by the user; this supersedes earlier pending approval notes. No independent tutor contact or architecture-finalist RL comparison is claimed.
+
+306 matched baseline/control/random runs and 15 additional original-DQN runs completed. Archived teammate scorecards were verified. PHASE3_HANDOFF.md collects outcomes, decisions, reproduction commands and limitations.
+
+First improvement selected for each algorithm: count-based intrinsic training reward, motivated by sparse rewards and repeated states. This is a proposed intervention, not proven performance. Phase 4 implementation and pilot are separate from this branch.

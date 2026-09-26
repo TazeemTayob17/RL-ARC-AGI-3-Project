@@ -21,6 +21,9 @@ def build_learner(cfg: RunConfig) -> Learner:
     if c.algo == "random_flat":
         return RandomPolicy("flat")
     if c.algo == "dqn":
+        if c.version.upper() == "V1":
+            from .dqn_v1 import DQNV1
+            return DQNV1(c.game, c.params, c.updates_disabled)
         from .dqn import DQN
         return DQN(c.arch, c.params, c.updates_disabled)
     if c.algo == "ppo":
