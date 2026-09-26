@@ -1,0 +1,204 @@
+{
+ "identity": {
+  "schema_version": 1,
+  "run_id": "random_type-V0-ls20-s0-a282e4bd024f",
+  "config_hash": "a282e4bd024f",
+  "config": {
+   "algo": "random_type",
+   "game": "ls20",
+   "version": "V0",
+   "seed": 0,
+   "env_seed": 0,
+   "budget": 1500,
+   "arch": {
+    "id": "onehotcnn_stack2",
+    "channels": 32,
+    "context_dim": 128
+   },
+   "params": {},
+   "updates_disabled": false,
+   "regime": "research",
+   "threads": 1,
+   "tag": "phase3-selected-dqn"
+  },
+  "architecture_id": "onehotcnn_stack2",
+  "observation_contract": {
+   "frame": "int8[64,64]",
+   "history": "previous step's last frame",
+   "extras": "prev_action, progress, high_water, mask"
+  },
+  "action_representation": "flat4102: 6 simple + 4096 clicks; type-balanced exploration",
+  "auxiliary_objectives": [],
+  "memory": null,
+  "budget_accounting": "scorer-rule actions (steps + non-first resets)",
+  "split_hash": "8819bd3b28d9",
+  "code_commit": "af55921d1a62cfbfa04d52bd81265fa5c72cd2bc+dirty",
+  "packages": {
+   "arc-agi": "0.9.9",
+   "arcengine": "0.9.3",
+   "numpy": "2.5.3",
+   "torch": "2.14.0+cpu"
+  },
+  "model_info": {}
+ },
+ "status": "budget",
+ "error": null,
+ "counters": {
+  "budget": 1500,
+  "scorer_actions": 1500,
+  "env_commands": 1501,
+  "resets": 12,
+  "episodes": 12,
+  "high_water": 0,
+  "sdk_total_actions": 1500
+ },
+ "official_score": {
+  "source": "arc_agi SDK local scorecard (NORMAL mode)",
+  "score": 0.0,
+  "levels_completed": 0,
+  "arc_agi_version": "0.9.9"
+ },
+ "diagnostics": {
+  "steps": 1489,
+  "action_type_counts": [
+   341,
+   370,
+   390,
+   388,
+   0,
+   0,
+   0
+  ],
+  "click_fraction": 0.0,
+  "frame_change_rate": 1.0,
+  "unique_state_rate": 0.770987239758227,
+  "unique_states": 1148,
+  "repeated_state_transitions": 341,
+  "rewarded_transitions": 0,
+  "first_reward_action": null,
+  "progress_curve": [
+   [
+    0,
+    0
+   ]
+  ],
+  "game_overs": 11,
+  "wins": 0
+ },
+ "learner": {},
+ "cost": {
+  "wall_s": 10.43,
+  "env_s": 9.12,
+  "act_s": 0.34,
+  "observe_update_s": 0.0,
+  "peak_rss_mb": 598.5,
+  "s_per_10k_actions": 69.5,
+  "host": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "threads": 1,
+  "system_cpu_pct_before_run": 41.2
+ },
+ "scorecard": {
+  "card_id": "eef4ebf8-dc0d-403a-98f0-3e1bb8c75277",
+  "score": 0.0,
+  "environments": [
+   {
+    "id": "ls20-9607627b",
+    "runs": [
+     {
+      "guid": "fdbf0cbb-3262-413f-9e56-ad86f6e01d94",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 0,
+      "resets": 0,
+      "state": "NOT_FINISHED",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       22,
+       123,
+       73,
+       84,
+       96,
+       192,
+       186
+      ]
+     },
+     {
+      "guid": "fdbf0cbb-3262-413f-9e56-ad86f6e01d94",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 1500,
+      "resets": 11,
+      "state": "GAME_OVER",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       1500,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       22,
+       123,
+       73,
+       84,
+       96,
+       192,
+       186
+      ]
+     }
+    ],
+    "score": 0.0,
+    "actions": 1500,
+    "levels_completed": 0,
+    "completed": false,
+    "level_count": 7,
+    "resets": 11
+   }
+  ],
+  "tags_scores": [
+   {
+    "id": "keyboard",
+    "score": 0.0,
+    "levels_completed": 0,
+    "actions": 0,
+    "number_of_levels": 7,
+    "number_of_environments": 1
+   }
+  ],
+  "total_environments_completed": 0,
+  "total_environments": 1,
+  "total_levels_completed": 0,
+  "total_levels": 7,
+  "total_actions": 1500
+ }
+}

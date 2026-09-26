@@ -1,0 +1,235 @@
+{
+ "identity": {
+  "schema_version": 1,
+  "run_id": "dqn-V0-sp80-s0-4cf52df2abb4",
+  "config_hash": "4cf52df2abb4",
+  "config": {
+   "algo": "dqn",
+   "game": "sp80",
+   "version": "V0",
+   "seed": 0,
+   "env_seed": 0,
+   "budget": 1500,
+   "arch": {
+    "id": "onehotcnn_stack2",
+    "channels": 32,
+    "context_dim": 128
+   },
+   "params": {
+    "lr": 0.0001,
+    "gamma": 0.99,
+    "batch": 32,
+    "replay_capacity": 50000,
+    "warmup": 1000,
+    "train_every": 4,
+    "target_update": 1000,
+    "eps_start": 1.0,
+    "eps_end": 0.05,
+    "eps_decay_actions": 10000,
+    "huber_delta": 1.0,
+    "double": true,
+    "grad_clip": 10.0
+   },
+   "updates_disabled": false,
+   "regime": "research",
+   "threads": 0,
+   "tag": "phase3-provisional"
+  },
+  "architecture_id": "onehotcnn_stack2",
+  "observation_contract": {
+   "frame": "int8[64,64]",
+   "history": "previous step's last frame",
+   "extras": "prev_action, progress, high_water, mask"
+  },
+  "action_representation": "flat4102: 6 simple + 4096 clicks; type-balanced exploration",
+  "auxiliary_objectives": [],
+  "memory": null,
+  "budget_accounting": "scorer-rule actions (steps + non-first resets)",
+  "split_hash": "8819bd3b28d9",
+  "code_commit": "af55921d1a62cfbfa04d52bd81265fa5c72cd2bc+dirty",
+  "packages": {
+   "arc-agi": "0.9.9",
+   "arcengine": "0.9.3",
+   "numpy": "2.5.3",
+   "torch": "2.14.0"
+  },
+  "model_info": {
+   "architecture": "onehotcnn_stack2",
+   "arch_config": {
+    "id": "onehotcnn_stack2",
+    "channels": 32,
+    "context_dim": 128
+   },
+   "parameters": 53127
+  }
+ },
+ "status": "budget",
+ "error": null,
+ "counters": {
+  "budget": 1500,
+  "scorer_actions": 1500,
+  "env_commands": 1501,
+  "resets": 53,
+  "episodes": 53,
+  "high_water": 1,
+  "sdk_total_actions": 1500
+ },
+ "official_score": {
+  "source": "arc_agi SDK local scorecard (NORMAL mode)",
+  "score": 4.761904761904762,
+  "levels_completed": 1,
+  "arc_agi_version": "0.9.9"
+ },
+ "diagnostics": {
+  "steps": 1448,
+  "action_type_counts": [
+   226,
+   244,
+   238,
+   220,
+   260,
+   0,
+   260
+  ],
+  "click_fraction": 0.17955801104972377,
+  "frame_change_rate": 1.0,
+  "unique_state_rate": 0.7030386740331491,
+  "unique_states": 1018,
+  "repeated_state_transitions": 430,
+  "rewarded_transitions": 1,
+  "first_reward_action": 19,
+  "progress_curve": [
+   [
+    0,
+    0
+   ],
+   [
+    19,
+    1
+   ]
+  ],
+  "game_overs": 52,
+  "wins": 0
+ },
+ "learner": {
+  "algo": "dqn",
+  "actions_seen": 1448,
+  "gradient_steps": 113,
+  "target_syncs": 1,
+  "epsilon": 0.86244,
+  "loss_ema": 0.0021050658810527713,
+  "q_mean_ema": 0.00014382656154121473,
+  "replay_size": 1448,
+  "updates_disabled": false,
+  "replay_mb": 782.9
+ },
+ "cost": {
+  "wall_s": 61.08,
+  "env_s": 3.84,
+  "act_s": 0.79,
+  "observe_update_s": 55.42,
+  "peak_rss_mb": 553.9,
+  "s_per_10k_actions": 407.2,
+  "host": "Windows-11-10.0.26200-SP0",
+  "threads": "default",
+  "system_cpu_pct_before_run": 62.3
+ },
+ "scorecard": {
+  "card_id": "2186abd0-ac90-466d-8367-c582a41888b4",
+  "score": 4.761904761904762,
+  "environments": [
+   {
+    "id": "sp80-589a99af",
+    "runs": [
+     {
+      "guid": "a5e1ade0-3df8-4c1b-8357-e83de80ba864",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 0,
+      "resets": 0,
+      "state": "NOT_FINISHED",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       39,
+       58,
+       25,
+       148,
+       96,
+       152
+      ]
+     },
+     {
+      "guid": "a5e1ade0-3df8-4c1b-8357-e83de80ba864",
+      "score": 4.761904761904762,
+      "levels_completed": 1,
+      "actions": 1500,
+      "resets": 52,
+      "state": "GAME_OVER",
+      "completed": false,
+      "level_scores": [
+       115.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       19,
+       1481,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       39,
+       58,
+       25,
+       148,
+       96,
+       152
+      ]
+     }
+    ],
+    "score": 4.761904761904762,
+    "actions": 1500,
+    "levels_completed": 1,
+    "completed": false,
+    "level_count": 6,
+    "resets": 52
+   }
+  ],
+  "tags_scores": [
+   {
+    "id": "keyboard_click",
+    "score": 4.761904761904762,
+    "levels_completed": 1,
+    "actions": 1500,
+    "number_of_levels": 6,
+    "number_of_environments": 1
+   }
+  ],
+  "total_environments_completed": 0,
+  "total_environments": 1,
+  "total_levels_completed": 1,
+  "total_levels": 6,
+  "total_actions": 1500
+ }
+}

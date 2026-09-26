@@ -1,0 +1,19 @@
+{
+  "games": [
+    "ft09",
+    "g50t",
+    "ls20",
+    "ar25",
+    "sp80"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "env_seed": 0,
+  "budget": 1500,
+  "threads": 1,
+  "source": "new comparison; historical protocol unavailable",
+  "v1_records": "results/phase3_selected_baseline"
+}

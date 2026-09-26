@@ -1,0 +1,433 @@
+ARC-AGI-3 DQN BASELINE: EMPIRICAL HANDOFF
+===========================================
+
+Purpose
+-------
+This file is a neutral record of the experiments that led to the current DQN baseline. It is intended for another engineer or agent joining the project. It records what was tested, the protocols used, the observed numbers, known implementation corrections, and the currently selected baseline. It intentionally does not recommend what should be tried next and should not be treated as a constraint on future hypotheses.
+
+Important interpretation rules
+------------------------------
+* All 25 public ARC-AGI-3 games have influenced development. None of the numbers below are evidence of true unseen-game generalization.
+* p600 means the fraction of game-runs that had observed progress by 600 actions under the local development protocol. It is NOT the official ARC/Kaggle score.
+* completion-cap is a local development completion proxy used consistently within the relevant matched experiment. It is NOT the official ARC/Kaggle score.
+* Results from different tables used different seeds, controls, or system configurations. Do not rank two systems merely because one historical p600 number is numerically larger than another from a different protocol.
+* Confidence intervals shown below are the experiment-generated game-cluster bootstrap intervals where available.
+* “Selected baseline” means selected by the experiment's stated rule on the public development set. It is not a claim that the architecture is globally optimal.
+
+CURRENT SELECTED DQN BASELINE
+=============================
+Representation / observation side:
+  - one-hot colour CNN
+  - two-frame latent stack
+  - vector-conditioned action representation, including ACTION6 coordinates
+  - binary state-change/effect auxiliary objective
+  - animation summaries retained during preprocessing
+
+Value learning:
+  - Double DQN
+  - Dueling value/advantage head
+  - one-step return
+  - uniform replay
+  - no prioritized replay
+  - no C51/distributional head
+  - no n-step return in the selected configuration
+
+Exploration:
+  - ordinary greedy Q branch is unchanged
+  - only epsilon actions use the structured explorer
+  - structured explorer splits responsibilities: spatial salience chooses ACTION6 coordinates; effect/count scores help choose simple actions
+  - source implementation alias: D14_split_effect_count
+  - a6_salience_w=1.0, simple_effect_w=0.7, simple_count_w=0.7
+  - salience rarity=1.0, local contrast=0.35, component term=0.5
+  - preserve_type_prior=true, ACTION6 probability=0.7, temperature=0.6
+
+Online mechanics extras currently NOT present in the selected behavioral baseline:
+  - no online mechanics residual feeding exploration
+  - no mechanics auxiliary prediction head
+  - no cross-death/cross-level mechanics persistence
+  - no graph-recovery controller
+
+Final matched consolidation result (25 public games, 3 seeds, 600 actions; 75 game-runs/system):
+system                                                               | p250  | p600  | completion | reward | first progress | structured/eps
+---------------------------------------------------------------------+-------+-------+------------+--------+----------------+---------------
+FULL: Dueling Double DQN + structured exploration                    | 0.147 | 0.160 | 0.0107     | 0.160  | 97.1           | 1.000         
+no Dueling; structured exploration retained                          | 0.120 | 0.120 | 0.0080     | 0.120  | 54.7           | 1.000         
+plain Double DQN + uniform exploration                               | 0.027 | 0.053 | 0.0036     | 0.053  | 203.5          | 0.000         
+Dueling Double DQN + uniform exploration (no structured exploration) | 0.027 | 0.040 | 0.0027     | 0.040  | 137.7          | 0.000         
+
+Matched full-stack effects:
+  FULL - no structured exploration: p600 +0.1200, 95% CI [-0.0267, +0.2800]; completion +0.0080, CI [-0.0009, +0.0187].
+  FULL - no Dueling:                p600 +0.0400, 95% CI [+0.0000, +0.1067]; completion +0.0027, CI [+0.0000, +0.0071].
+  FULL - plain Double DQN:          p600 +0.1067, 95% CI [-0.0400, +0.2667]; completion +0.0071, CI [-0.0027, +0.0169].
+
+The final selected development result is therefore p600=0.160 and completion-cap=0.01067 for the full stack. This is the final selected baseline result, not the highest p600 ever observed under every historical protocol.
+
+EXPERIMENTAL RECORD
+===================
+
+1. Early affordance / utility / action-restriction pilots
+-------------------------------------------------------
+These predated the systematic architecture search. The recovered source record is incomplete, so only source-supported figures are included.
+
+* Action-effect / affordance prediction: a learned signal for whether an action would change the environment reduced no-op actions by approximately 24% in the recorded pilot. However, selecting actions simply because they were likely to cause change could increase GAME_OVER events; “causes a change” was therefore not equivalent to “is useful.” Exact per-arm table values were not present in the recovered audit.
+* Direct progress/utility classifier: 5 progress transitions were present among 10,762 collected transitions (~0.0465%). Reported validation accuracy was about 98%, but on the held-out games every tested utility variant still produced 0 progress, 0 levels, and 0 ARC score; no safety or no-op improvement was observed.
+* Hard ACTION6 pruning and inverse-dynamics variants are recorded in the research history as unsupported. The recovered audit does not contain enough numerical detail to reproduce their exact per-arm table, so no numbers are invented here.
+
+2. Representation, temporal encoding, action interface, auxiliary objective, and memory search
+-----------------------------------------------------------------------------------------
+Data/protocol: 89,055 transitions; changed-state rate 0.7010; ACTION6 rate 0.6531; 25 public games in 5 disjoint folds. Stage 1 evaluated 1,050 configurations (fold 0, seed 11, 1 epoch); Stage 2 retained 64 (folds 0-2, seed 11, 3 epochs); Stage 3 retained 12 (5 folds x seeds 11/29/47, 6 epochs).
+
+Search dimensions:
+  encoders: categorical CNN, one-hot CNN, residual CNN, coordinate residual CNN, patch transformer, residual+colour statistics, residual+object-moment transformer
+  temporal: single state, two-frame stack, latent delta, four-step GRU, four-step attention
+  action interfaces: vector MLP, flat 4096-coordinate, axial/factorized coordinates, 64x64 spatial map, local spatial sampling, coarse-to-fine
+  auxiliary targets: binary effect, effect+fraction, effect+final delta mask, effect+animation-union mask, multitask
+
+Dataset/animation diagnostics: multi-frame transition rate 0.2490; maximum frames/response 81; transitions with intermediate-only pixels 0.1797. Animation-summary retention was carried forward.
+
+Stage-3 architecture ranking (screen_score is the architecture proxy score, not ARC score):
+rank | architecture source alias                           | screen | macro PR-AUC | A6 PR-AUC | Brier  | ECE    | A6 map ms | params 
+-----+-----------------------------------------------------+--------+--------------+-----------+--------+--------+-----------+--------
+1    | onehotcnn__T-stack2__A-vector__U-effect             | 0.9409 | 0.7167       | 0.7061    | 0.2101 | 0.2331 | 6.70      | 184897 
+2    | catcnn__T-delta__A-vector__U-effect                 | 0.7164 | 0.6740       | 0.6995    | 0.2272 | 0.2541 | 6.14      | 204225 
+3    | coordres__T-delta__A-axial__U-effect_fraction       | 0.7109 | 0.6768       | 0.6070    | 0.2229 | 0.2183 | 5.10      | 475977 
+4    | objecttx__T-gru4__A-spatial__U-effect_fraction      | 0.6027 | 0.6589       | 0.6404    | 0.2217 | 0.2175 | 14.14     | 780361 
+5    | rescnn__T-attn4__A-spatial__U-effect_delta          | 0.5936 | 0.6739       | 0.6508    | 0.2367 | 0.2335 | 9.21      | 619305 
+6    | resstats__T-stack2__A-coarsefine__U-effect_fraction | 0.5773 | 0.6517       | 0.6534    | 0.2236 | 0.2210 | 7.14      | 507785 
+7    | rescnn__T-delta__A-coarsefine__U-effect             | 0.5636 | 0.6588       | 0.6546    | 0.2351 | 0.2452 | 6.77      | 488936 
+8    | resstats__T-attn4__A-spatial__U-effect              | 0.3836 | 0.6060       | 0.6393    | 0.2265 | 0.2235 | 9.34      | 558792 
+9    | resstats__T-gru4__A-flat__U-effect_union            | 0.3218 | 0.6689       | 0.5653    | 0.2752 | 0.2793 | 4.69      | 1134600
+10   | resstats__T-gru4__A-spatial__U-effect_delta         | 0.2518 | 0.6389       | 0.6055    | 0.2423 | 0.2458 | 9.30      | 661641 
+11   | patchtx__T-single__A-local__U-effect_delta          | 0.1818 | 0.5889       | 0.6177    | 0.2618 | 0.2826 | 3.02      | 389250 
+12   | resstats__T-gru4__A-local__U-effect_union           | 0.1555 | 0.6056       | 0.5769    | 0.2536 | 0.2618 | 6.19      | 644162 
+
+The selected representation row had macro effect PR-AUC 0.7167 +/- 0.1894, ACTION6 PR-AUC 0.7061, macro Brier 0.2101, ECE 0.2331, full ACTION6 map evaluation 6.70 ms, and 184,897 parameters. Its screen score 0.9409 is a proxy tournament score, not a 94.09% ARC score.
+
+Full-factor Stage-1 mean screening tendencies (descriptive; they are marginal averages across combinations, not causal effects):
+  encoder: onehotcnn .5546; resstats .5533; coordres .5406; catcnn .5015; rescnn .4954; objecttx .4624; patchtx .3922
+  temporal: delta .5239; gru4 .5076; attn4 .4971; stack2 .4919; single .4794
+  action interface: vector .5914; spatial .5489; local .5428; coarsefine .5234; axial .4520; flat .3415
+  auxiliary target: effect_union .5155; effect_delta .5082; multi .5023; effect .4875; effect_fraction .4865
+
+Memory-representation tournament:
+memory              | coverage | accuracy | compression | alias disagreement | score
+--------------------+----------+----------+-------------+--------------------+------
+downsample16        | .9067    | .9001    | .9912       | .0842              | .8040
+learned kNN 0.90    | .9234    | .8872    | -           | -                  | .7999
+learned kNN 0.95    | .9197    | .8871    | -           | -                  | .7985
+learned kNN 0.98    | .9108    | .8867    | -           | -                  | .7952
+downsample12        | .8549    | .8946    | .9805       | .0729              | .7840
+learned k-means 64  | .8591    | .8966    | -           | -                  | .7835
+downsample8         | .8163    | .9074    | .9741       | .0761              | .7771
+learned k-means 128 | .8391    | .8963    | -           | -                  | .7763
+learned k-means 256 | .8162    | .8952    | -           | -                  | .7676
+downsample6         | .6758    | .8992    | .9178       | .0647              | .7246
+downsample4         | .5329    | .8868    | .8179       | .0703              | .6672
+downsample3         | .2929    | .8935    | .5722       | .0617              | .5877
+
+Representation carried forward from this search: one-hot CNN + two-frame stack + vector action interface + binary effect objective. downsample16 was the highest-scoring memory key in its separate retrieval tournament.
+
+3. Reward-free exploration/action-selection search
+--------------------------------------------------
+The first 24-controller package was superseded before scientific selection because additional exploration families were missing. The expanded search used 40 selectors in Stage 1, then 12 in Stage 2 (5 folds x 3 seeds x 600 actions). Families included salience, effect/affordance, count novelty, RND, distributional RND, disagreement, entropy, information gain, graph/archive return, mechanics novelty, learning-progress signals, reversibility, and hybrids/arbitration.
+
+Expanded-search Stage-2 ranking (12 selectors):
+rank | source alias         | family           | p250  | p600  | no-op | first progress
+-----+----------------------+------------------+-------+-------+-------+---------------
+1    | X20_salience         | salience         | 0.187 | 0.187 | 0.331 | 93.1          
+2    | X21_effect_salience  | salience         | 0.147 | 0.160 | 0.324 | 124.8         
+3    | X04_gate_025         | affordance_gate  | 0.067 | 0.107 | 0.256 | 252.6         
+4    | X14_disagreement_100 | disagreement     | 0.067 | 0.093 | 0.357 | 271.0         
+5    | X33_gate_count_rffig | safe_hybrid      | 0.053 | 0.053 | 0.298 | 89.0          
+6    | X15_re3_sa_100       | entropy          | 0.040 | 0.067 | 0.298 | 237.4         
+7    | X09_rnd_050          | rnd              | 0.027 | 0.067 | 0.300 | 308.4         
+8    | X32_effect_re3       | hybrid           | 0.027 | 0.040 | 0.315 | 173.0         
+9    | X12_drnd_100         | drnd             | 0.013 | 0.053 | 0.322 | 302.2         
+10   | X06_count_050        | count            | 0.027 | 0.040 | 0.295 | 209.7         
+11   | X02_effect_soft      | affordance       | 0.013 | 0.027 | 0.349 | 193.5         
+12   | X13_rffig_075        | information_gain | 0.000 | 0.013 | 0.304 | 430.0         
+
+The salience family ranked highest in this broad screen, which triggered a dedicated mechanism audit rather than immediate adoption.
+
+Salience mechanism audit (12 controllers; 75 game-runs/controller):
+rank | source alias                         | family                 | p250  | p600  | ACTION6 | exact repeat
+-----+--------------------------------------+------------------------+-------+-------+---------+-------------
+1    | C08_salience_plus_component          | salience_extension     | 0.200 | 0.227 | 0.604   | 0.091       
+2    | C17_salience_exactrepeat035          | repeat_control         | 0.187 | 0.200 | 0.604   | 0.045       
+3    | C03_salience_type_preserved          | salience_type_audit    | 0.187 | 0.200 | 0.604   | 0.115       
+4    | C12_salience_tau080                  | salience_strength      | 0.187 | 0.200 | 0.604   | 0.085       
+5    | C05_rarity_only                      | salience_ablation      | 0.173 | 0.200 | 0.604   | 0.116       
+6    | C01_salience_legacy                  | legacy_salience        | 0.187 | 0.187 | 0.751   | 0.233       
+7    | C21_salience_disagreement            | static_hybrid          | 0.160 | 0.200 | 0.604   | 0.155       
+8    | C20_salience_gate025                 | static_hybrid          | 0.147 | 0.173 | 0.595   | 0.148       
+9    | C26_arbiter_full_specialists         | arbiter                | 0.080 | 0.120 | 0.596   | 0.074       
+10   | C04_salience_type_preserved_shuffled | salience_type_audit    | 0.067 | 0.093 | 0.606   | 0.065       
+11   | C00_uniform                          | control                | 0.053 | 0.093 | 0.604   | 0.064       
+12   | C02_salience_legacy_shuffled         | salience_spatial_audit | 0.013 | 0.040 | 0.752   | 0.123       
+
+Key matched audit deltas:
+  legacy spatial salience - shuffled-coordinate version: p600 +0.1467 across 75 matched runs.
+  type-prior-preserved salience - its shuffled-coordinate version: p600 +0.1067.
+  full specialist arbiter - legacy salience: p600 -0.0667.
+  full specialist arbiter - type-prior-preserved salience: p600 -0.0800.
+These controls separated location-specific salience from merely changing how often ACTION6 was chosen.
+
+Final six-seed reward-free lock-in (28 controllers; all 25 public games):
+rank | source alias                     | family             | p250  | p600  | score   | ACTION6 | no-op | progress games | LOO rank
+-----+----------------------------------+--------------------+-------+-------+---------+---------+-------+----------------+---------
+1    | D17_contrast_015                 | local_robustness   | 0.200 | 0.220 | 1.3318  | 0.604   | 0.276 | 9              | 1.36    
+2    | D14_split_effect_count           | split_specialist   | 0.193 | 0.227 | 1.3136  | 0.604   | 0.273 | 8              | 2.24    
+3    | D03_C08_base                     | salience_component | 0.207 | 0.220 | 1.3064  | 0.604   | 0.276 | 9              | 3.16    
+4    | D05_a6_040                       | action_type        | 0.193 | 0.227 | 1.2895  | 0.449   | 0.239 | 8              | 4.08    
+5    | D06_a6_055                       | action_type        | 0.200 | 0.220 | 1.2844  | 0.527   | 0.257 | 9              | 5.16    
+6    | D21_repeat020_a6_055             | interaction        | 0.173 | 0.227 | 1.2370  | 0.527   | 0.255 | 8              | 6.32    
+7    | D02_clean_salience               | clean_salience     | 0.193 | 0.213 | 1.2237  | 0.604   | 0.289 | 8              | 7.20    
+8    | D11_split_effect                 | split_specialist   | 0.187 | 0.207 | 1.2098  | 0.604   | 0.301 | 7              | 8.20    
+9    | D04_C17_reference                | repeat_reference   | 0.193 | 0.200 | 1.1925  | 0.604   | 0.284 | 8              | 9.12    
+10   | D10_repeat_035                   | repeat_refinement  | 0.180 | 0.207 | 1.1906  | 0.604   | 0.272 | 8              | 9.76    
+11   | D18_contrast_055                 | local_robustness   | 0.187 | 0.200 | 1.1600  | 0.604   | 0.275 | 9              | 10.92   
+12   | D08_repeat_010                   | repeat_refinement  | 0.173 | 0.207 | 1.1385  | 0.604   | 0.275 | 8              | 12.08   
+13   | D15_component_025                | local_robustness   | 0.173 | 0.200 | 1.1350  | 0.604   | 0.280 | 8              | 12.92   
+14   | D07_a6_085                       | action_type        | 0.180 | 0.193 | 1.1129  | 0.682   | 0.294 | 8              | 13.92   
+15   | D13_split_count                  | split_specialist   | 0.167 | 0.193 | 1.0941  | 0.604   | 0.269 | 7              | 15.04   
+16   | D20_tau_080                      | local_robustness   | 0.167 | 0.200 | 1.0777  | 0.604   | 0.275 | 8              | 16.00   
+17   | D19_tau_045                      | local_robustness   | 0.187 | 0.207 | 1.0761  | 0.604   | 0.285 | 8              | 16.72   
+18   | D09_repeat_020                   | repeat_refinement  | 0.160 | 0.193 | 1.0597  | 0.604   | 0.273 | 7              | 17.60   
+19   | D23_split_effect_count_repeat020 | interaction        | 0.153 | 0.187 | 1.0361  | 0.604   | 0.272 | 6              | 18.76   
+20   | D12_split_disagreement           | split_specialist   | 0.167 | 0.180 | 1.0272  | 0.604   | 0.322 | 6              | 19.48   
+21   | D22_repeat020_a6_085             | interaction        | 0.147 | 0.167 | 0.9085  | 0.682   | 0.292 | 6              | 21.12   
+22   | D16_component_075                | local_robustness   | 0.153 | 0.167 | 0.9007  | 0.604   | 0.274 | 7              | 21.84   
+23   | D24_affordance_gate              | diverse_control    | 0.060 | 0.093 | 0.2121  | 0.512   | 0.256 | 5              | 23.16   
+24   | D00_uniform                      | control            | 0.040 | 0.080 | 0.1766  | 0.606   | 0.300 | 6              | 24.16   
+25   | D01_salience_shuffled            | falsification      | 0.047 | 0.080 | 0.1746  | 0.606   | 0.300 | 5              | 24.96   
+26   | D25_disagreement                 | diverse_control    | 0.047 | 0.087 | 0.1595  | 0.627   | 0.359 | 4              | 25.76   
+27   | D27_safe_hybrid                  | diverse_control    | 0.033 | 0.033 | -0.0265 | 0.598   | 0.296 | 2              | 27.00   
+28   | D26_re3                          | diverse_control    | 0.027 | 0.040 | -0.0369 | 0.613   | 0.300 | 3              | 27.96   
+
+Key paired comparisons from that six-seed lock-in:
+  contrast-weighted salience - uniform: p600 +0.1400, 95% CI [+0.0467, +0.2600].
+  canonical salience+component - uniform: p600 +0.1400, 95% CI [+0.0400, +0.2733].
+  canonical salience+component - shuffled salience: p600 +0.1400, 95% CI [+0.0400, +0.2733].
+  contrast-weighted salience - canonical salience+component: p600 +0.0000, 95% CI [-0.0200, +0.0200].
+Highest p600 in this protocol was 0.227, reached by split effect/count structured exploration, lower-ACTION6 allocation, and a repeat/ACTION6 interaction variant. The overall ranking metric placed contrast-weighted salience first at p600=0.220 because of its broader/earlier progress pattern and leave-one-game-out stability.
+
+4. Online mechanics adaptation before RL
+----------------------------------------
+Protocol: 6 exploration bases x 8 adaptation families x 5 folds x 3 seeds x 600 actions in the initial screen; then one representative per adaptation family plus matched frozen controls with 6 seeds; then causal/local-robustness controls with 6 seeds. Adaptation was reset on death and level transition.
+
+Initial Stage-2 result on a lower-ACTION6 exploration base:
+adapter                       | p250  | p600  | Brier gain | adapt ECE | score 
+------------------------------+-------+-------+------------+-----------+-------
+empirical update              | 0.193 | 0.227 | 0.0699     | 0.1353    | 1.3876
+head-only SGD                 | 0.193 | 0.227 | 0.0551     | 0.1496    | 1.3646
+multitask residual            | 0.193 | 0.227 | 0.0540     | 0.1390    | 1.3636
+residual                      | 0.193 | 0.227 | 0.0501     | 0.1445    | 1.3575
+partial representation update | 0.193 | 0.227 | 0.0301     | 0.1877    | 1.3253
+gated residual                | 0.193 | 0.227 | 0.0280     | 0.2014    | 1.3214
+frozen control                | 0.193 | 0.227 | 0.0000     | 0.2419    | 1.2774
+context update                | 0.193 | 0.227 | -0.0274    | 0.2523    | 1.2357
+
+In that initial experiment every adapter had exactly the same p600=0.227. The causal/robustness controls also all had p600=0.227:
+control                                 | p250  | p600  | Brier gain | score 
+----------------------------------------+-------+-------+------------+-------
+empirical, lower kappa                  | 0.193 | 0.227 | 0.0765     | 1.3982
+empirical, higher global weight         | 0.193 | 0.227 | 0.0731     | 1.3928
+empirical, nominal                      | 0.193 | 0.227 | 0.0699     | 1.3876
+empirical, lower global weight          | 0.193 | 0.227 | 0.0657     | 1.3809
+empirical, higher kappa                 | 0.193 | 0.227 | 0.0610     | 1.3734
+perfect-recall seen-transition headroom | 0.193 | 0.227 | 0.0449     | 1.3489
+shuffled-target control                 | 0.193 | 0.227 | 0.0383     | 1.3393
+compute-without-update control          | 0.193 | 0.227 | 0.0000     | 1.2774
+matched frozen control                  | 0.193 | 0.227 | 0.0000     | 1.2774
+
+A later coupling audit found that this exploration base did not actually consume the adapted effect signal in its action score. Therefore its behavioral equality could not establish that adaptation itself had no behavioral effect. Prediction metrics from this run remained descriptive, but the behavioral interpretation required a repaired experiment.
+
+Repaired six-seed matched confirmation on an exploration controller that explicitly consumed the effect signal (150 game-runs/adapter; 240 task files total):
+adapter           | p250  | p600  | delta vs frozen | 95% CI          | action divergence | Brier gain
+------------------+-------+-------+-----------------+-----------------+-------------------+-----------
+A5_context        | 0.193 | 0.233 | +0.007          | [+0.000,+0.020] | 0.1860            | -0.0270   
+A6_gated_residual | 0.193 | 0.233 | +0.007          | [+0.000,+0.020] | 0.0500            | +0.0338   
+A0_frozen         | 0.193 | 0.227 | baseline        | -               | -                 | +0.0000   
+A3_residual       | 0.193 | 0.227 | +0.000          | [+0.000,+0.000] | 0.1036            | +0.0556   
+A2_head_sgd       | 0.187 | 0.220 | -0.007          | [-0.040,+0.020] | 0.2106            | +0.0575   
+A1_empirical      | 0.180 | 0.213 | -0.013          | [-0.033,+0.000] | 0.2896            | +0.0698   
+A4_multitask      | 0.180 | 0.213 | -0.013          | [-0.060,+0.020] | 0.1691            | +0.0592   
+A7_partial_rep    | 0.187 | 0.213 | -0.013          | [-0.047,+0.013] | 0.1592            | +0.0320   
+
+The repaired experiment's predeclared rule was: do not call adaptation behaviorally useful unless it both changes actions and improves matched behavior; prediction gain alone cannot select it.
+Observed pattern: the empirical adapter had the largest Brier gain (+0.0698) and changed ~29% of actions but had p600=0.213 versus frozen 0.227. The gated residual changed ~5% of actions, had Brier gain +0.0338, and reached p600=0.233 (+0.0067; CI [0,+0.02]). A context adapter also reached 0.233 but worsened Brier by -0.0270.
+
+5. Persistence and graph-recovery tests before RL
+--------------------------------------------------
+Six-seed confirmation, 25 public games, 600 actions:
+system                                 | p250  | p600  | completion | first progress | death/100 | recovery actions | post-level Brier gain
+---------------------------------------+-------+-------+------------+----------------+-----------+------------------+----------------------
+persist mechanics across death         | 0.193 | 0.240 | 0.0160     | 143.3          | 1.010     | 0.000            | 0.0345               
+persist mechanics across death + level | 0.193 | 0.240 | 0.0160     | 143.3          | 1.010     | 0.000            | 0.1221               
+graph-control policy                   | 0.193 | 0.227 | 0.0151     | 131.4          | 1.061     | 0.000            | 0.0000               
+reset mechanics at death + level       | 0.187 | 0.227 | 0.0151     | 130.4          | 1.017     | 0.000            | 0.0348               
+persist mechanics across level only    | 0.187 | 0.227 | 0.0151     | 130.4          | 1.017     | 0.000            | 0.0898               
+persistent graph return/recovery       | 0.187 | 0.227 | 0.0151     | 146.3          | 1.069     | 0.043            | 0.0000               
+death persistence + graph recovery     | 0.173 | 0.220 | 0.0147     | 151.6          | 1.027     | 0.036            | 0.0363               
+
+Matched comparisons:
+  persist-through-death - reset: p600 +0.0133, 95% CI [0.0000,+0.0333], positive in 2/6 seeds.
+  persist-through-level-only - reset: p600 +0.0000, CI [0,0], positive in 0/6 seeds.
+  persist-through-death+level - reset: p600 +0.0133, CI [0,+0.0333], positive in 2/6 seeds.
+  persistent graph recovery - graph control: p600 +0.0000, CI [-0.0267,+0.0267].
+  death persistence + graph - death persistence alone: p600 -0.0200, CI [-0.0467,+0.0067].
+  2x2 persistence interaction on p600: +0.0000, CI [0,0].
+
+6. DQN-family backbone search
+-----------------------------
+Representation, reward, action space, games, seeds, interaction budget, and reset semantics were fixed. Stage 1 varied one-step Double DQN, 3-step returns, prioritized replay, Dueling, C51, plus a no-update sanity control. Stage 2 tested selected combinations and one full reference combination.
+
+Stage-1 screen:
+rank | system                       | p250  | p600  | completion | first progress
+-----+------------------------------+-------+-------+------------+---------------
+1    | Dueling Double DQN           | 0.067 | 0.080 | 0.0053     | 121.5         
+2    | 3-step Double DQN            | 0.053 | 0.067 | 0.0044     | 153.8         
+3    | PER Double DQN               | 0.053 | 0.053 | 0.0036     | 71.5          
+4    | Double DQN                   | 0.040 | 0.053 | 0.0036     | 165.5         
+5    | Double DQN, updates disabled | 0.027 | 0.027 | 0.0018     | 50.0          
+6    | C51 Double DQN               | 0.013 | 0.027 | 0.0018     | 156.5         
+
+Stage-2 six-seed confirmation:
+system                     | p250  | p600  | completion | reward | first progress | updates | parameter delta
+---------------------------+-------+-------+------------+--------+----------------+---------+----------------
+Dueling Double DQN         | 0.067 | 0.087 | 0.0058     | 0.087  | 172.4          | 72.6    | 0.2157         
+PER + Dueling              | 0.073 | 0.080 | 0.0053     | 0.080  | 135.1          | 72.6    | 0.2009         
+3-step + Dueling           | 0.060 | 0.073 | 0.0049     | 0.073  | 155.0          | 72.7    | 0.2187         
+3-step                     | 0.053 | 0.073 | 0.0049     | 0.073  | 205.3          | 72.7    | 0.2119         
+3-step + PER               | 0.060 | 0.067 | 0.0044     | 0.067  | 131.6          | 72.7    | 0.2028         
+PER                        | 0.047 | 0.067 | 0.0044     | 0.067  | 173.0          | 72.7    | 0.2081         
+Double DQN                 | 0.047 | 0.067 | 0.0044     | 0.067  | 191.0          | 72.7    | 0.2234         
+full reference combination | 0.027 | 0.027 | 0.0018     | 0.027  | 92.2           | 72.8    | 0.6301         
+
+Matched p600 deltas versus Double DQN:
+  3-step: +0.0067, CI [-0.0267,+0.0467].
+  PER: +0.0000, CI [-0.0267,+0.0267].
+  Dueling: +0.0200, CI [-0.0200,+0.0667].
+  3-step+Dueling: +0.0067, CI [-0.0267,+0.0400].
+  3-step+PER: +0.0000, CI [-0.0200,+0.0200].
+  PER+Dueling: +0.0133, CI [-0.0267,+0.0533].
+  full reference combination: -0.0400, CI [-0.0733,-0.0067].
+The no-update sanity control was 0.0267 p600 below the learning baseline in Stage 1, CI [-0.0667,0].
+
+7. Structured exploration integrated into the Dueling DQN
+----------------------------------------------------------
+The structured policy was applied only to epsilon actions; greedy Q actions were not overridden. Controls separated a uniform epsilon policy from a matched ACTION6/simple type prior with random action selection within type.
+
+Three-seed screen:
+rank | system                                      | p250  | p600  | completion | first progress | structured/eps
+-----+---------------------------------------------+-------+-------+------------+----------------+---------------
+1    | structured through action 250               | 0.173 | 0.187 | 0.0124     | 95.9           | 0.748         
+2    | full structured epsilon exploration         | 0.173 | 0.187 | 0.0124     | 100.4          | 1.000         
+3    | stagnation-triggered structured exploration | 0.160 | 0.160 | 0.0107     | 117.8          | 0.781         
+4    | 50/50 structured/random epsilon mix         | 0.147 | 0.160 | 0.0107     | 120.0          | 0.496         
+5    | uniform epsilon control                     | 0.027 | 0.027 | 0.0018     | 61.5           | 0.000         
+6    | type-prior random control                   | 0.027 | 0.027 | 0.0018     | 94.0           | 0.000         
+
+Six-seed confirmation:
+system                                                | p250  | p600  | completion | reward | ACTION6 | structured/eps | first progress
+------------------------------------------------------+-------+-------+------------+--------+---------+----------------+---------------
+full structured exploration on every epsilon action   | 0.167 | 0.173 | 0.0116     | 0.173  | 0.537   | 1.000          | 74.2          
+structured exploration only through action 250        | 0.167 | 0.173 | 0.0116     | 0.173  | 0.535   | 0.750          | 81.8          
+matched ACTION6/simple type prior, random within type | 0.027 | 0.047 | 0.0031     | 0.047  | 0.529   | 0.000          | 223.6         
+uniform epsilon exploration                           | 0.040 | 0.040 | 0.0027     | 0.040  | 0.373   | 0.000          | 129.3         
+
+Matched effects of full structured exploration:
+  versus uniform epsilon: p600 +0.1333, CI [+0.0133,+0.2800]; completion +0.0089, CI [+0.0009,+0.0187].
+  versus matched type-prior random: p600 +0.1267, CI [+0.0267,+0.2467]; completion +0.0084, CI [+0.0018,+0.0169].
+This experiment is the cleanest evidence that the structure of the exploration policy contributed beyond simply allocating more epsilon actions to ACTION6.
+
+8. Mechanics signals integrated into the DQN
+---------------------------------------------
+Four systems were screened with three seeds: no mechanics addition; gated mechanics updating only structured-exploration effect logits; a changed-state auxiliary prediction head on DQN features; and both together.
+
+Three-seed screen:
+system                                           | p250  | p600  | completion | reward | first progress | mechanics gain | aux Brier
+-------------------------------------------------+-------+-------+------------+--------+----------------+----------------+----------
+Dueling DQN + structured exploration control     | 0.173 | 0.187 | 0.0124     | 0.187  | 100.4          | 0.0000         | NA       
+gated mechanics -> structured exploration logits | 0.173 | 0.187 | 0.0124     | 0.187  | 100.4          | 0.0489         | NA       
+auxiliary changed-state prediction head          | 0.160 | 0.173 | 0.0116     | 0.173  | 96.6           | 0.0000         | 0.2333   
+gated mechanics + auxiliary head                 | 0.160 | 0.173 | 0.0116     | 0.173  | 96.6           | 0.0511         | 0.2333   
+
+Two fresh-seed holdout:
+system                                           | p250  | p600  | completion | reward | first progress | mechanics gain
+-------------------------------------------------+-------+-------+------------+--------+----------------+---------------
+gated mechanics -> structured exploration logits | 0.200 | 0.200 | 0.0133     | 0.200  | 54.2           | 0.0510        
+Dueling DQN + structured exploration control     | 0.200 | 0.200 | 0.0133     | 0.200  | 54.2           | 0.0000        
+
+Fresh-holdout gated-mechanics minus control: p600 +0.0000 [0,0]; completion +0.0000 [0,0]. Five-seed pooled p600 was 0.192 for both. Mechanics prediction improved (Brier gain about +0.051 on the holdout) without a behavioral difference.
+A generated lock file labeled the mechanics candidate as selected despite an exact behavioral tie; the experiment's own selection rule said exact ties retain the control. The behavioral record used for the subsequent baseline therefore treats this as no observed behavioral uplift.
+
+9. Mechanics-persistence tests inside the DQN
+----------------------------------------------
+DQN weights, optimizer, replay, epsilon schedule, and structured-exploration novelty counts persisted within a game in every arm. Only the lifetime of the mechanics adapter was changed.
+
+Three new-seed screen:
+system                                  | p250  | p600  | completion | reward | first progress | mechanics gain | death transfer | level transfer
+----------------------------------------+-------+-------+------------+--------+----------------+----------------+----------------+---------------
+mechanics reset at death + level        | 0.147 | 0.160 | 0.0107     | 0.160  | 83.2           | 0.0473         | 0.0017         | 0.0000        
+mechanics persist through death         | 0.147 | 0.160 | 0.0107     | 0.160  | 83.2           | 0.0768         | 0.0017         | 0.0000        
+no mechanics adapter                    | 0.147 | 0.160 | 0.0107     | 0.160  | 83.2           | 0.0000         | 0.0017         | 0.0000        
+mechanics persist through death + level | 0.147 | 0.160 | 0.0107     | 0.160  | 83.2           | 0.0779         | 0.0017         | 0.0000        
+
+Two further fresh seeds:
+system                           | p250  | p600  | completion | reward | first progress | mechanics gain | death transfer | level transfer
+---------------------------------+-------+-------+------------+--------+----------------+----------------+----------------+---------------
+no mechanics adapter             | 0.200 | 0.220 | 0.0147     | 0.220  | 88.7           | 0.0000         | 0.0008         | 0.0000        
+mechanics persist through death  | 0.200 | 0.220 | 0.0147     | 0.220  | 88.7           | 0.0703         | 0.0008         | 0.0000        
+mechanics reset at death + level | 0.180 | 0.200 | 0.0133     | 0.200  | 80.8           | 0.0433         | 0.0004         | 0.0000        
+
+Fresh-holdout comparisons:
+  persist-through-death mechanics - no mechanics adapter: p600 +0.0000 [0,0]; completion +0.0000 [0,0].
+  persist-through-death mechanics - reset mechanics: p600 +0.0200 [0,+0.0600]; completion +0.0013 [0,+0.0040].
+  reset mechanics - no mechanics adapter: p600 -0.0200 [-0.0600,0]; completion -0.0013 [-0.0040,0].
+Five-seed pooled p600: no mechanics adapter 0.184; persist-through-death 0.184; reset mechanics 0.176.
+
+10. Final matched DQN consolidation / ablation
+----------------------------------------------
+This was not another broad search. It compared the accumulated DQN stack with three removals under new seeds: remove structured exploration, remove Dueling, and remove both (plain Double DQN + uniform exploration). 25 public games x 3 seeds x 600 actions = 75 game-runs/system, 300 game-runs total.
+
+system                                                               | p250  | p600  | completion | reward | first progress
+---------------------------------------------------------------------+-------+-------+------------+--------+---------------
+FULL: Dueling Double DQN + structured exploration                    | 0.147 | 0.160 | 0.0107     | 0.160  | 97.1          
+no Dueling; structured exploration retained                          | 0.120 | 0.120 | 0.0080     | 0.120  | 54.7          
+plain Double DQN + uniform exploration                               | 0.027 | 0.053 | 0.0036     | 0.053  | 203.5         
+Dueling Double DQN + uniform exploration (no structured exploration) | 0.027 | 0.040 | 0.0027     | 0.040  | 137.7         
+
+Full stack - no structured exploration: p600 +0.1200 [-0.0267,+0.2800].
+Full stack - no Dueling:                p600 +0.0400 [+0.0000,+0.1067].
+Full stack - plain Double DQN:          p600 +0.1067 [-0.0400,+0.2667].
+
+Game-level heterogeneity was substantial. For full minus no-structured-exploration, most p600 uplift came from cd82 (+0.667), r11l (+1.000), tn36 (+1.000), and vc33 (+1.000), while sp80 favored the ablation (-0.667). For full minus no-Dueling, the p600 difference was concentrated mainly in cd82 (+0.667) and sp80 (+0.333). This explains the wide game-cluster intervals and should be preserved when interpreting the aggregate means.
+
+CURRENT EMPIRICAL STATE, WITHOUT PRESCRIBING FUTURE WORK
+=======================================================
+The following are observations, not instructions to a future agent:
+
+* The representation selected by the large proxy search was one-hot CNN + two-frame stack + vector action conditioning + binary effect prediction. It was later used throughout the DQN experiments rather than re-searching representation every time.
+* Spatially structured reward-free exploration repeatedly produced higher progress-discovery rates than uniform/shuffled/generic novelty controls on the public development games. When integrated into Dueling Double DQN, full structured epsilon exploration also beat both uniform epsilon and a matched ACTION6/simple type-prior random control in the six-seed confirmation.
+* Online mechanics prediction can improve its own predictive metrics without improving progress. The repaired mechanics experiment showed that some adapters materially changed actions; prediction improvement and behavioral improvement were not monotonic.
+* Persistence across deaths produced small positive signals before RL but did not improve behavior over the mechanics-free DQN control when retested inside the RL system. Level persistence did not show behavioral uplift in the matched tests.
+* Graph-recovery additions did not improve the tested controller and the combined persistence+graph system was lower than persistence alone in the matched comparison.
+* Dueling showed the highest p600 among the isolated DQN backbone variants. PER and 3-step returns did not show a clear matched gain in that protocol. The full combination of standard DQN enhancements was lower than plain Double DQN in the six-seed confirmation.
+* The final consolidation selected the full Dueling + structured-exploration stack because none of the ablations was behaviorally better under the predeclared ordering. The final p600 advantage over no-Dueling had a CI whose lower endpoint was zero; the larger no-structured-exploration and plain-DDQN differences had wide intervals crossing zero in that three-seed consolidation. Earlier six-seed structured-exploration integration provides separate evidence with intervals above zero.
+
+KNOWN LIMITATIONS / GUARDRAILS
+==============================
+* The 25 public games are development-exposed. Treat all public-set measurements as development evidence.
+* p600, sparse progress reward, and completion-cap are local metrics. They must not be reported as the official ARC-AGI-3/Kaggle score.
+* Several experiments intentionally used lightweight seed counts for screening. Read the seed count and confidence interval alongside every mean.
+* Some early exploratory pilots are only partially recoverable from the source record; where exact numbers were unavailable, this file explicitly says so instead of reconstructing them from memory.
+* One mechanics-integration lock file had a selection-label inconsistency on an exact tie; the raw behavioral data are retained and the neutral interpretation is recorded above.
+* Different historical p600 values are not directly comparable unless they come from the same matched experiment. Seed sets changed across stages.
+* The current baseline has not been established here as optimal for PPO or for unseen/private ARC games. This handoff is specifically the history of the DQN baseline development.
+
+SOURCE / TRACEABILITY NOTE
+==========================
+This handoff was reconstructed from the cluster experiment audit, the repaired mechanics-coupling audit, and the final DQN consolidation report/lock data. Internal experiment-number labels were intentionally omitted from the narrative because they are not useful to a new agent. Raw implementation aliases are retained selectively where they help map the findings back to code.
+
+End of handoff.

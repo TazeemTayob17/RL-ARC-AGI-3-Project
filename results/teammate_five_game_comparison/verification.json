@@ -1,0 +1,77 @@
+{
+  "archive_sha256": "471e4a37c6ebaa4f1053f7593dd5e229404a99d965178c387bd8c008fe411b7b",
+  "checks": "passed",
+  "independent_rerun": false,
+  "runs": [
+    {
+      "version": "v0",
+      "game": "sp80",
+      "score": 0.0,
+      "levels": 0,
+      "actions": 201
+    },
+    {
+      "version": "v0",
+      "game": "r11l",
+      "score": 0.11758989310009718,
+      "levels": 1,
+      "actions": 201
+    },
+    {
+      "version": "v0",
+      "game": "cd82",
+      "score": 0.0,
+      "levels": 0,
+      "actions": 201
+    },
+    {
+      "version": "v0",
+      "game": "ls20",
+      "score": 0.0,
+      "levels": 0,
+      "actions": 201
+    },
+    {
+      "version": "v0",
+      "game": "tn36",
+      "score": 0.0,
+      "levels": 0,
+      "actions": 201
+    },
+    {
+      "version": "v1",
+      "game": "sp80",
+      "score": 0.0,
+      "levels": 0,
+      "actions": 201
+    },
+    {
+      "version": "v1",
+      "game": "r11l",
+      "score": 1.5960955019126766,
+      "levels": 1,
+      "actions": 201
+    },
+    {
+      "version": "v1",
+      "game": "cd82",
+      "score": 0.5043507546921292,
+      "levels": 1,
+      "actions": 201
+    },
+    {
+      "version": "v1",
+      "game": "ls20",
+      "score": 0.0,
+      "levels": 0,
+      "actions": 201
+    },
+    {
+      "version": "v1",
+      "game": "tn36",
+      "score": 0.3515131542813204,
+      "levels": 1,
+      "actions": 201
+    }
+  ]
+}

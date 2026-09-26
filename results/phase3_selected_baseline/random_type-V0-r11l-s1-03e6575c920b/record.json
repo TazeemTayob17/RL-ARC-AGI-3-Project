@@ -1,0 +1,202 @@
+{
+ "identity": {
+  "schema_version": 1,
+  "run_id": "random_type-V0-r11l-s1-03e6575c920b",
+  "config_hash": "03e6575c920b",
+  "config": {
+   "algo": "random_type",
+   "game": "r11l",
+   "version": "V0",
+   "seed": 1,
+   "env_seed": 0,
+   "budget": 1500,
+   "arch": {
+    "id": "onehotcnn_stack2",
+    "channels": 32,
+    "context_dim": 128
+   },
+   "params": {},
+   "updates_disabled": false,
+   "regime": "research",
+   "threads": 1,
+   "tag": "phase3-selected-dqn"
+  },
+  "architecture_id": "onehotcnn_stack2",
+  "observation_contract": {
+   "frame": "int8[64,64]",
+   "history": "previous step's last frame",
+   "extras": "prev_action, progress, high_water, mask"
+  },
+  "action_representation": "flat4102: 6 simple + 4096 clicks; type-balanced exploration",
+  "auxiliary_objectives": [],
+  "memory": null,
+  "budget_accounting": "scorer-rule actions (steps + non-first resets)",
+  "split_hash": "8819bd3b28d9",
+  "code_commit": "af55921d1a62cfbfa04d52bd81265fa5c72cd2bc+dirty",
+  "packages": {
+   "arc-agi": "0.9.9",
+   "arcengine": "0.9.3",
+   "numpy": "2.5.3",
+   "torch": "2.14.0+cpu"
+  },
+  "model_info": {}
+ },
+ "status": "budget",
+ "error": null,
+ "counters": {
+  "budget": 1500,
+  "scorer_actions": 1500,
+  "env_commands": 1501,
+  "resets": 46,
+  "episodes": 46,
+  "high_water": 1,
+  "sdk_total_actions": 1500
+ },
+ "official_score": {
+  "source": "arc_agi SDK local scorecard (NORMAL mode)",
+  "score": 0.0025060449272757673,
+  "levels_completed": 1,
+  "arc_agi_version": "0.9.9"
+ },
+ "diagnostics": {
+  "steps": 1455,
+  "action_type_counts": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1455
+  ],
+  "click_fraction": 1.0,
+  "frame_change_rate": 1.0,
+  "unique_state_rate": 0.9745704467353952,
+  "unique_states": 1418,
+  "repeated_state_transitions": 37,
+  "rewarded_transitions": 1,
+  "first_reward_action": 959,
+  "progress_curve": [
+   [
+    0,
+    0
+   ],
+   [
+    959,
+    1
+   ]
+  ],
+  "game_overs": 45,
+  "wins": 0
+ },
+ "learner": {},
+ "cost": {
+  "wall_s": 4.28,
+  "env_s": 3.09,
+  "act_s": 0.18,
+  "observe_update_s": 0.0,
+  "peak_rss_mb": 626.7,
+  "s_per_10k_actions": 28.6,
+  "host": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "threads": 1,
+  "system_cpu_pct_before_run": 33.4
+ },
+ "scorecard": {
+  "card_id": "919e926c-11a6-4b6c-a01d-673b18708a46",
+  "score": 0.0025060449272757673,
+  "environments": [
+   {
+    "id": "r11l-495a7899",
+    "runs": [
+     {
+      "guid": "70619bed-619b-4830-a4aa-e2d0682a581f",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 0,
+      "resets": 0,
+      "state": "NOT_FINISHED",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       22,
+       33,
+       51,
+       26,
+       52,
+       49
+      ]
+     },
+     {
+      "guid": "70619bed-619b-4830-a4aa-e2d0682a581f",
+      "score": 0.0025060449272757673,
+      "levels_completed": 1,
+      "actions": 1500,
+      "resets": 45,
+      "state": "GAME_OVER",
+      "completed": false,
+      "level_scores": [
+       0.052626943472791114,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       959,
+       541,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       22,
+       33,
+       51,
+       26,
+       52,
+       49
+      ]
+     }
+    ],
+    "score": 0.0025060449272757673,
+    "actions": 1500,
+    "levels_completed": 1,
+    "completed": false,
+    "level_count": 6,
+    "resets": 45
+   }
+  ],
+  "tags_scores": [
+   {
+    "id": "click",
+    "score": 0.0025060449272757673,
+    "levels_completed": 1,
+    "actions": 1500,
+    "number_of_levels": 6,
+    "number_of_environments": 1
+   }
+  ],
+  "total_environments_completed": 0,
+  "total_environments": 1,
+  "total_levels_completed": 1,
+  "total_levels": 6,
+  "total_actions": 1500
+ }
+}

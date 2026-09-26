@@ -1,0 +1,198 @@
+{
+ "identity": {
+  "schema_version": 1,
+  "run_id": "random_type-V0-sc25-s2-08bab125c8ab",
+  "config_hash": "08bab125c8ab",
+  "config": {
+   "algo": "random_type",
+   "game": "sc25",
+   "version": "V0",
+   "seed": 2,
+   "env_seed": 0,
+   "budget": 1500,
+   "arch": {
+    "id": "onehotcnn_stack2",
+    "channels": 32,
+    "context_dim": 128
+   },
+   "params": {},
+   "updates_disabled": false,
+   "regime": "research",
+   "threads": 1,
+   "tag": "phase3-selected-dqn"
+  },
+  "architecture_id": "onehotcnn_stack2",
+  "observation_contract": {
+   "frame": "int8[64,64]",
+   "history": "previous step's last frame",
+   "extras": "prev_action, progress, high_water, mask"
+  },
+  "action_representation": "flat4102: 6 simple + 4096 clicks; type-balanced exploration",
+  "auxiliary_objectives": [],
+  "memory": null,
+  "budget_accounting": "scorer-rule actions (steps + non-first resets)",
+  "split_hash": "8819bd3b28d9",
+  "code_commit": "af55921d1a62cfbfa04d52bd81265fa5c72cd2bc+dirty",
+  "packages": {
+   "arc-agi": "0.9.9",
+   "arcengine": "0.9.3",
+   "numpy": "2.5.3",
+   "torch": "2.14.0+cpu"
+  },
+  "model_info": {}
+ },
+ "status": "budget",
+ "error": null,
+ "counters": {
+  "budget": 1500,
+  "scorer_actions": 1500,
+  "env_commands": 1501,
+  "resets": 24,
+  "episodes": 24,
+  "high_water": 0,
+  "sdk_total_actions": 1500
+ },
+ "official_score": {
+  "source": "arc_agi SDK local scorecard (NORMAL mode)",
+  "score": 0.0,
+  "levels_completed": 0,
+  "arc_agi_version": "0.9.9"
+ },
+ "diagnostics": {
+  "steps": 1477,
+  "action_type_counts": [
+   289,
+   297,
+   294,
+   297,
+   0,
+   0,
+   300
+  ],
+  "click_fraction": 0.2031144211238998,
+  "frame_change_rate": 0.7494922139471902,
+  "unique_state_rate": 0.46242383209207855,
+  "unique_states": 683,
+  "repeated_state_transitions": 794,
+  "rewarded_transitions": 0,
+  "first_reward_action": null,
+  "progress_curve": [
+   [
+    0,
+    0
+   ]
+  ],
+  "game_overs": 23,
+  "wins": 0
+ },
+ "learner": {},
+ "cost": {
+  "wall_s": 7.74,
+  "env_s": 6.69,
+  "act_s": 0.24,
+  "observe_update_s": 0.0,
+  "peak_rss_mb": 565.0,
+  "s_per_10k_actions": 51.6,
+  "host": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "threads": 1,
+  "system_cpu_pct_before_run": 36.8
+ },
+ "scorecard": {
+  "card_id": "e0212b7c-4b50-4bf2-898a-9642d6aa896a",
+  "score": 0.0,
+  "environments": [
+   {
+    "id": "sc25-635fd71a",
+    "runs": [
+     {
+      "guid": "df98fd02-61e5-4150-8db2-293665a2c665",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 0,
+      "resets": 0,
+      "state": "NOT_FINISHED",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       36,
+       6,
+       32,
+       83,
+       143,
+       50
+      ]
+     },
+     {
+      "guid": "df98fd02-61e5-4150-8db2-293665a2c665",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 1500,
+      "resets": 23,
+      "state": "GAME_OVER",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       1500,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       36,
+       6,
+       32,
+       83,
+       143,
+       50
+      ]
+     }
+    ],
+    "score": 0.0,
+    "actions": 1500,
+    "levels_completed": 0,
+    "completed": false,
+    "level_count": 6,
+    "resets": 23
+   }
+  ],
+  "tags_scores": [
+   {
+    "id": "keyboard_click",
+    "score": 0.0,
+    "levels_completed": 0,
+    "actions": 0,
+    "number_of_levels": 6,
+    "number_of_environments": 1
+   }
+  ],
+  "total_environments_completed": 0,
+  "total_environments": 1,
+  "total_levels_completed": 0,
+  "total_levels": 6,
+  "total_actions": 1500
+ }
+}

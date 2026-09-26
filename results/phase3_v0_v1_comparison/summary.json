@@ -1,0 +1,331 @@
+{
+  "protocol": {
+    "games": [
+      "ft09",
+      "g50t",
+      "ls20",
+      "ar25",
+      "sp80"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "budget": 1500
+  },
+  "totals": {
+    "V0": {
+      "mean_game_score": 0.6566699769708643,
+      "total_levels_across_15_runs": 3,
+      "mean_gradient_steps": 121.4
+    },
+    "V1": {
+      "mean_game_score": 0.006773234900996547,
+      "total_levels_across_15_runs": 1,
+      "mean_gradient_steps": 183.66666666666666
+    }
+  },
+  "runs": [
+    {
+      "version": "V0",
+      "game": "ft09",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 125,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ft09-s0-9077ad6a0288/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ft09",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 125,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ft09-s1-2b6ee0e62746/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ft09",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 125,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ft09-s2-2e2d9e7f6cd6/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "g50t",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 123,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-g50t-s0-c50c0fe00dba/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "g50t",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 123,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-g50t-s1-f3bfdb22898e/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "g50t",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 123,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-g50t-s2-92297d80266c/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ls20",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 123,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ls20-s0-258ec7bbe916/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ls20",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 123,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ls20-s1-abd4502fe97f/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ls20",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 123,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ls20-s2-53c5e0f121a5/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ar25",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 122,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ar25-s0-bc3022097ff9/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ar25",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 122,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ar25-s1-8d7642918f39/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "ar25",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 122,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-ar25-s2-473e0432084d/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "sp80",
+      "seed": 0,
+      "score": 4.761904761904762,
+      "levels": 1,
+      "gradient_steps": 113,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-sp80-s0-413a83c916c7/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "sp80",
+      "seed": 1,
+      "score": 4.761904761904762,
+      "levels": 1,
+      "gradient_steps": 114,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-sp80-s1-b78f76941baa/record.json"
+    },
+    {
+      "version": "V0",
+      "game": "sp80",
+      "seed": 2,
+      "score": 0.326240130753441,
+      "levels": 1,
+      "gradient_steps": 115,
+      "scorer_actions": 1500,
+      "record": "results/phase3_v0_v1_comparison/dqn-V0-sp80-s2-cc78bf0f6b54/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ft09",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 186,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ft09-s0-39a56b343c65/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ft09",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 186,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ft09-s1-726d76cade6c/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ft09",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 185,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ft09-s2-c03d2176262c/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "g50t",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 185,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-g50t-s0-675898457997/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "g50t",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 185,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-g50t-s1-e6ca9c5d7b31/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "g50t",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 185,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-g50t-s2-9304ce47c72b/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ls20",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 185,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ls20-s0-03b3c0caf86f/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ls20",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 185,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ls20-s1-a642735dd2e7/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ls20",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 185,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ls20-s2-7490b387227f/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ar25",
+      "seed": 0,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 186,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ar25-s0-473e428da9b3/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ar25",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 186,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ar25-s1-c2a528bacb9a/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "ar25",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 186,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-ar25-s2-e2875b7cad21/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "sp80",
+      "seed": 0,
+      "score": 0.1015985235149482,
+      "levels": 1,
+      "gradient_steps": 174,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-sp80-s0-3f4fb2d10b86/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "sp80",
+      "seed": 1,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 180,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-sp80-s1-b0227c197d48/record.json"
+    },
+    {
+      "version": "V1",
+      "game": "sp80",
+      "seed": 2,
+      "score": 0.0,
+      "levels": 0,
+      "gradient_steps": 176,
+      "scorer_actions": 1500,
+      "record": "results/phase3_selected_baseline/dqn-V1-sp80-s2-9d90f65bd537/record.json"
+    }
+  ]
+}
