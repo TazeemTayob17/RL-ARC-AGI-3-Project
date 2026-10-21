@@ -5,6 +5,20 @@ All 25 public games were already used in architecture development (plan 3.3), so
 status **confirmed by the group**. Rule: stratified by action-set type, seeded,
 and a game whose completion trajectory was inspected (ft09) is never reserved.
 
+## Cluster-research exposure (added in Phase 4)
+
+Sources: `BASELINE_EXPERIMENT_HISTORY.txt` (verified in the repo) and the team research handoff (cluster experiments E001–E074; reported, not re-run). None of these artifacts is used by our agents except the frozen DQN prior checkpoints.
+
+| Exposure | Games affected | Effect on the reserved games (bp35, cn04, lp85, s5i5, sb26, sk48, tu93, wa30) |
+|---|---|---|
+| Selected-DQN architecture, exploration and ablation development | all 25 | All reserved games influenced architecture and exploration choices |
+| Frozen DQN prior checkpoints: each fold checkpoint trained on the other four public folds | all 25 (each game is held out of one checkpoint, in the other four) | Every reserved game is in the training data of four of the five checkpoints; the deployment checkpoint (fold 0) was trained on folds 1–4, which include cn04, lp85, s5i5, wa30 |
+| E074 human-demonstration models (BC/DDQN, offline) trained on `sb26, s5i5, lf52, tn36, g50t` | 5 | sb26 and s5i5 (reserved) were used for training; **not used by any of our agents** |
+| Wider-project reported results and design iteration (vc33, cd82, sc25, lp85, wa30 and others) | many | lp85 and wa30 (reserved) appear in reported controller results; they informed the choice of improvement candidates (event-repeat evidence includes lp85) |
+| Anti-cheat rule | all | No agent reads game files or human data; guard test `tests/test_no_cheating.py` |
+
+"Reserved" therefore still means only reserved from *further tuning*; no public game is untouched.
+
 Columns filled from this repo's recon and Phase 1 probes (`scripts/probe/`, `docs/evidence/`). The architecture-development and historical training exposure are now supported by
 `BASELINE_EXPERIMENT_HISTORY.txt`: all 25 games influenced architecture, exploration, and DQN development.
 Exact cluster exposure dates and raw experiment records are still pending. The dates in the table describe
