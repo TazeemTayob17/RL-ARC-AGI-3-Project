@@ -13,6 +13,7 @@ import torch
 import torch.nn.functional as F
 
 from .adapter import GRID, N_ACTIONS, N_SIMPLE, N_TYPES, Observation, Transition, sample_type_uniform, type_mask
+from .intrinsic import NoveltyCounter
 from .model import ObsBatch, QNet, collate, model_info
 
 NEG = -1e9   # finite mask value: keeps every intermediate finite (no 0 * -inf)
@@ -66,6 +67,8 @@ class DQN:
         self.store, self.next_store = ObsStore(cap), ObsStore(cap)
         self.action = np.zeros(cap, np.int16)
         self.reward = np.zeros(cap, np.float32)
+        self.intrinsic = np.zeros(cap, np.float32)          # I1 bonus, stored beside the extrinsic reward
+        self.novelty = NoveltyCounter(float(self.p.get("intrinsic_beta", 0.0)))
         self.done = np.zeros(cap, bool)
         self.size = self.ptr = 0
         self.n_act = self.n_seen = self.grad_steps = self.target_syncs = 0
@@ -90,6 +93,7 @@ class DQN:
         self.store.put(i, t.obs)
         self.next_store.put(i, t.next_obs)
         self.action[i], self.reward[i], self.done[i] = t.action, t.reward, t.terminal
+        self.intrinsic[i] = self.novelty.bonus(t)
         self.ptr = (i + 1) % self.p["replay_capacity"]
         self.size = min(self.size + 1, self.p["replay_capacity"])
         self.n_seen += 1
@@ -109,7 +113,7 @@ class DQN:
         idx = self.rng.integers(0, self.size, p["batch"])
         b, nb = self.store.get(idx), self.next_store.get(idx)
         a = torch.from_numpy(self.action[idx].astype(np.int64))
-        r, d = torch.from_numpy(self.reward[idx]), torch.from_numpy(self.done[idx])
+        r, d = torch.from_numpy(self.reward[idx] + self.intrinsic[idx]), torch.from_numpy(self.done[idx])
         q = self.net(b).gather(1, a[:, None]).squeeze(1)
         with torch.no_grad():
             qt = self.target(nb)
@@ -135,7 +139,8 @@ class DQN:
         return {"algo": "dqn", "actions_seen": self.n_seen, "gradient_steps": self.grad_steps,
                 "target_syncs": self.target_syncs, "epsilon": self.epsilon(), "loss_ema": self.loss_ema,
                 "q_mean_ema": self.q_ema, "replay_size": self.size, "updates_disabled": self.updates_disabled,
-                "replay_mb": round((self.store.nbytes + self.next_store.nbytes) / 2**20, 1)}
+                "replay_mb": round((self.store.nbytes + self.next_store.nbytes) / 2**20, 1),
+                "intrinsic": self.novelty.summary()}
 
     def model_info(self) -> dict:
         return model_info(self.net, self.arch)

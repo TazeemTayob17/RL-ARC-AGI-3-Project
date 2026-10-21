@@ -22,8 +22,11 @@ def build_learner(cfg: RunConfig) -> Learner:
         return RandomPolicy("flat")
     if c.algo == "dqn":
         if c.version.upper() == "V1":
+            from .checkpoint_resolver import resolve_prior
             from .dqn_v1 import DQNV1
-            return DQNV1(c.game, c.params, c.updates_disabled)
+            spec = resolve_prior(c.game)      # the only game-id -> checkpoint/seed mapping; the learner never sees the id
+            return DQNV1(c.params, c.updates_disabled, prior_path=spec.path, fold=spec.fold,
+                         seed_offset=spec.seed_offset, deployment=spec.deployment)
         from .dqn import DQN
         return DQN(c.arch, c.params, c.updates_disabled)
     if c.algo == "ppo":

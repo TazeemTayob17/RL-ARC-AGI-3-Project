@@ -1,9 +1,9 @@
 # ARC-AGI-3 RL Assignment — Implementation Planning Prompt
 
 **Course:** COMS4061A/COMS7071A, 2026  
-**Updated:** 22 September 2026  
-**Course deadline:** 27 October 2026, 23:59 SAST  
-**Internal submission target:** 24 October 2026, for both Kaggle tracks  
+**Status:** Phases 1–3 complete; Phase 4 implemented and run, awaiting review and the Kaggle baseline submission (see §9 and the Change log)  
+**Course deadline:** per `RL_Assignment.pdf` (Moodle)  
+**Internal target:** both Kaggle tracks submitted before the Moodle deadline  
 **Purpose:** Source-of-truth planning prompt for turning the assignment requirements and current evidence into a concise implementation brief.
 
 > **Best-use note for the planning pass:** run this in a fresh Opus 5 context with only this document and directly relevant source files. If the interface offers an effort setting, use a high reasoning effort. Do not prepend the previous brainstorming conversation; this document is intended to be the clean source of truth for the planning task.
@@ -16,7 +16,7 @@ When this document is given to a planning model, treat it as the team's current 
 
 The goal is not to produce the most sophisticated-looking design or the most code. The goal is to reduce irreversible work: build the parts we already understand, keep uncertain research choices replaceable, and make every reported claim traceable to evidence. Progress means a smaller, better-tested decision surface and faster future experiments, not simply more implementation.
 
-The final neural architecture is intentionally **not frozen yet**. A separate controlled architecture-selection experiment is currently comparing observation encoders, temporal/state representations, action representations/heads, auxiliary objectives, and memory/state-retrieval representations across games, folds, and seeds. Its results will be supplied later.
+**Architecture status (updated after Phase 3):** the architecture-selection study is complete (`BASELINE_EXPERIMENT_HISTORY.txt`). The group adopted the teammate-selected DQN (one-hot colour CNN, two-frame stack, vector action representation, effect auxiliary, Dueling Double DQN, structured exploration; code label `V1`) as the DQN baseline, **without** the matched reward-based finalist comparison this plan originally required; that waiver is a disclosed limitation. PPO keeps the provisional V0 architecture, so DQN and PPO differ in representation; this is disclosed and not changed, to keep Phase 3 results valid. The original architecture-neutral design requirements below still govern all new code.
 
 Therefore:
 
@@ -75,11 +75,21 @@ The investigation is the main assessment objective. A valid zero-score submissio
 - Record unsuccessful experiments and distinguish reused code, pretrained models, and prior work from the team's own contribution.
 - Declare AI assistance and ensure the team can explain its submitted code and claims.
 
+**Anti-cheating and anti-overfitting rules (non-negotiable; added after Phase 3):**
+
+- **Agent input:** only the `Observation` fields from `src/adapter.py` — frame, previous frame, legal-action mask, previous action, levels completed, high-water mark, total levels.
+- **Never read from agent code:** `environment_files/`, game source, human baseline action counts, or SDK internals.
+- **No game identity:** no game-ID branches anywhere in agent code, including checkpoint selection and seeding. Checkpoint and seed are resolved by the run controller and passed in.
+- **No outside help for evaluated games:** no human trajectories, teacher actions, target frames, or simulator clones. Privileged diagnostics are allowed only as labelled upper bounds and never inside an agent.
+- **No overfitting:** shared configurations only; no per-game tuning; the reserved games are never tuned on; all 25 public games are described as exposed.
+- **Enforcement:** an automated guard test scans agent code for forbidden access and game names; it must also fail on a planted violation.
+- **Halt rule:** a run showing progress without exploration, file access, or game-specific constants is stopped and reported before anything continues.
+
 ## 2. What changes from the original plan
 
 | Issue | Updated decision | Implementation and verification |
 |---|---|---|
-| Paper Track scheduled after Moodle | Submit both tracks by 24 October internally | Add both submissions and their evidence to the final checklist; verify successful submission, not just notebook execution |
+| Paper Track scheduled after Moodle | Submit both tracks before the Moodle deadline | Add both submissions and their evidence to the final checklist; verify successful submission, not just notebook execution |
 | Official scores not assured for all versions | Six-version scoring matrix is mandatory | Establish official local scoring or schedule Kaggle evaluations before the large experiment grid |
 | Reward depends on unobserved historical progress | Verify reset semantics; expose progress context if using high-water reward | Store current progress and high-water mark with each transition; test replay consistency |
 | PPO assumes eight copies of an unseen game | Use one live environment in the baseline | Collect sequential rollouts through the same agent lifecycle used at submission |
@@ -92,6 +102,17 @@ The investigation is the main assessment objective. A valid zero-score submissio
 | Neural architecture specified before architecture-selection evidence is complete | Treat the current CNN/history/action-head design as provisional V0 and keep representation modules swappable | Use configuration-driven encoder, temporal, action-head, auxiliary-head, and optional memory interfaces; later validate strong architecture-search finalists under matched RL reward before freezing |
 
 These baseline design corrections are applied before baseline results are frozen. They do not replace the two later evidence-led improvements required for each algorithm.
+
+### 2a. What changed after Phase 3
+
+| Issue | Decision | How we check it |
+|---|---|---|
+| Learning-on equals learning-off at 1,500 actions (DQN 0.337 vs 0.340; PPO 0.067 vs 0.066) | Add a budget-sensitivity diagnostic in Phase 4: baseline vs learning-off at a larger budget on a predeclared dev subset (not an improvement) | Budget sized from measured compute; result decides whether later matched comparisons use a larger budget |
+| Selected DQN picks its checkpoint by game name and seeds from the game index; refuses unknown games | The run controller resolves checkpoint and seed and passes them in; unknown games use one declared deployment checkpoint (preferred: trained only on the dev games, with training code added to the repo; fallback: one predeclared fold checkpoint, disclosed) | Phase 3 action traces reproduce exactly; an unknown game id runs |
+| Reserved games already exposed by cluster research (V1 folds, human-demo models on `s5i5`/`sb26`, cluster results on `lp85`/`wa30`) | Disclose in `docs/EXPOSURE.md`; reserved stays "reserved from further tuning"; no human-demo data in any agent | Exposure table updated |
+| Separate cluster research track (E001–E074) | Disclosed prior work and exposure source; its lessons inform improvement choice; its checkpoints, hand-built controllers and one-game sprints are not used in our agents | Recorded in sources and change log |
+| No Kaggle submission yet | A valid baseline submission is a Phase 4 item | Submission ID, score, timestamp recorded |
+| No automated defence against cheating | Guard test added to Phase 4 | Passes on clean code, fails on a planted violation |
 
 ## 3. First decisions: interface, scoring, and exposure
 
@@ -139,6 +160,10 @@ True unseen evidence must come later from the competition's semi-private/private
 How effectively can the selected course-covered and non-course learning algorithms — currently planned as DQN and PPO, pending eligibility confirmation — learn useful behaviour within an unfamiliar game under a fixed interaction and runtime budget, and which evidence-led changes improve that adaptation?
 
 Model each game as partially observable. The provisional V0 baseline uses a short two-frame history as an approximation to useful temporal context, not as a claim that the underlying state is fully observed or that two frames are sufficient. The canonical observation/history contract must support configurable finite history and/or stateful temporal modules without changing environment semantics or core RL logic. Online learning is the chosen experimental setting. Do not assert that a frozen pretrained policy cannot transfer; transferable pretraining is a possible later experiment.
+
+**Baseline composition (disclosed):** the DQN baseline is a frozen, offline-pretrained encoder (cross-validation fold checkpoints trained on public games) plus online DQN learning; PPO is purely online. Pretraining cost is reported separately.
+
+**Central research question (wider project):** can an RL agent learn persistent causal hypotheses about unfamiliar game mechanics, infer objectives, and use prerequisite-aware reasoning to progress deeper across mechanically different games? The assignment investigation answers a smaller, testable part of it through the improvements in §7.
 
 ### 4.2 Agent lifecycle
 
@@ -324,7 +349,7 @@ For controlled comparisons, DQN and PPO should use the same base representation 
 
 Use replay, a target network, Huber loss, and epsilon-greedy exploration. If using the Double DQN target, name the baseline **Double DQN** and cite it; confirm course eligibility. Do not count it again as a later improvement.
 
-These are provisional experiment settings, not software-architecture constraints: learning rate 1e-4, gamma 0.99, batch 32, replay capacity up to 50,000, warm-up up to 1,000 actions, one training event per four actions, target updates every 1,000 actions. Keep them configuration-driven and calibrate them before freezing the baseline so warm-up and exploration schedules fit the actual budget.
+These are provisional experiment settings, not software-architecture constraints: learning rate 1e-4, gamma 0.99, batch 32, replay capacity up to 50,000, warm-up up to 1,000 actions, one training event per four actions, target updates every 1,000 actions. Keep them configuration-driven and calibrate them before freezing the baseline so warm-up and exploration schedules fit the actual budget. The adopted DQN baseline uses `DQN_V1_DEFAULTS` in `src/config.py` (warm-up 16, structured explorer D14); the settings above remain only for the original DQN reference.
 
 Store raw observations, context, actions, rewards, boundaries, and next-state masks. Mask online-network next-action selection in Double DQN and evaluate the selected action using the target network. Skip bootstrapping terminal transitions, avoiding `0 * -inf` numerical failures.
 
@@ -352,6 +377,18 @@ Do not add cloned hidden-game sessions unless the interface explicitly supports 
 - Architecture substitution: replace the provisional encoder/temporal/action-head implementation through configuration without changing environment, scoring, or core DQN/PPO lifecycle code.
 - Checkpoint reconstruction: reload a saved run and verify that the exact architecture/component configuration is reconstructed, not merely the weights of the provisional CNN.
 - Full-action preservation: every tested action-head representation must still expose all currently legal actions after masking; no architecture-specific heuristic may silently remove them.
+
+### Bug-versus-research-failure procedure
+
+No idea is rejected until it passes these checks; fixes go into new versioned code and earlier failed runs are kept.
+
+1. **Implementation correctness:** action masks, click coordinates, reset handling, level boundaries, observation alignment, reward attribution, budget accounting; checkpoint loading, train/eval mode, optimizer steps, replay samples, gradient flow. For PPO also on-policy rollouts, log-probabilities, advantages, masked distributions.
+2. **Mechanism activation:** count how often the mechanism fires and whether it changes learning signals, values, action probabilities, chosen actions or executed options. An intrinsic reward may change actions only after training; identical early actions are not inactivity.
+3. **Deterministic unit test:** a small synthetic case where the mechanism must behave predictably.
+4. **End-to-end native check:** emitted actions are legal; rewards and level-ups agree with the SDK scorecard.
+5. **Fair comparison:** same games, seeds, starting conditions, data permissions and budgets; no seed silently dropped.
+
+Label every negative result as one of: implementation defect · inactive or unreachable mechanism · insufficient budget · poorly calibrated model or representation · genuine negative result. Only the last counts as evidence against the idea.
 
 ### Learning checks before ARC experiments
 
@@ -387,6 +424,8 @@ For each algorithm, use these labels:
 | V2 = V0 + I1 + I2 | Second evidence-led substantive improvement |
 | A2 = V0 + I2 | Ablation isolating the second improvement |
 
+**Label mapping (assignment stage vs code version).** Assignment stage labels (V0/V1/V2/A2) are recorded in a separate `stage` field of every run record. The code `version` field is only an implementation label: assignment V0 for DQN = code `dqn`/`V1` (the selected DQN, which is **not** an assignment improvement); assignment V0 for PPO = code `ppo`/`V0`.
+
 V0, V1, and V2 form the six mandatory versions across the two algorithms. Before architecture selection is complete, any V0 implementation is a **pipeline-validation scaffold**, not the frozen assignment baseline. Freeze V0 only after: (1) the required interface/lifecycle tests pass, (2) the architecture shortlist has completed its predeclared reward-based comparison or is explicitly retained as inconclusive, and (3) the baseline algorithm configuration and experiment budget are fixed. V1 already provides the V2-minus-I2 ablation; A2 provides V2-minus-I1. Reuse compatible existing results rather than rerunning them without a reason.
 
 Evaluate each selected stage on matched development games and seeds. At the final freeze, evaluate the six versions and relevant ablations on a predeclared public subset reserved from further tuning, while disclosing its prior architecture-development exposure. At minimum preserve matched comparisons of baselines, final agents, and the ablations needed for the main claims. Treat Kaggle semi-private/private evaluation as the only true unseen competition evidence.
@@ -420,11 +459,61 @@ Apply the same evidence standard to architecture decisions. The provisional V0 C
 | Rewards reached but propagated too slowly | Multi-step DQN returns | Store n-step returns with correct discount and terminal handling; compare under unchanged interaction budget |
 | Slow initial adaptation | Development-only pretraining | Pretrain on development games, freeze checkpoint selection before held-out evaluation, and report pretraining cost separately |
 
+**Status after Phase 3.** The group delegated improvement selection and chose **I1 = count-based intrinsic reward for both algorithms** (selected; implementation and pilot are Phase 4). Safeguards and criteria, fixed before any run:
+
+- Count exact hashes of the observed grid (a new state), not "the frame changed"; counts scoped per run and per level.
+- Bonus = β/√n, stored in its own `intrinsic` field at collection time (DQN keeps the historical bonus; disclosed). Zero bonus for action/undo two-step loops. β = 0 must reproduce baseline actions exactly.
+- Activation smoke first (2 games, 1 seed): the bonus is nonzero, it reaches the learning targets (DQN TD targets, PPO advantages), and Q-values or policy logits move after updates.
+- Primary metric: paired mean official local score difference against the Phase 3 records, with a game-cluster bootstrap 95% interval; secondary: levels completed and progress runs. An interval crossing zero is reported as inconclusive, which is still a valid evaluated stage.
+- Known risk: the selected DQN's explorer already uses its own counts, so I1 acts only through learning, which showed no effect at 1,500 actions; hence the budget-sensitivity diagnostic in Phase 4.
+
+Annotations from the cluster history [H, reported, not re-run]: recurrent PPO, multi-step DQN returns, prioritised replay, learned action-effect prediction as a reranker, graph memory, mechanics-prediction losses, latent world-model planning, reward-free PPO and pixel-change novelty all produced null or negative results there. Do not repeat them without a new falsifiable question.
+
+**I2 shortlist (chosen after Phase 4 by a rule fixed now).**
+
+| Candidate | What it adds | Evidence | Cost | Main risk |
+|---|---|---|---|---|
+| A. Event-terminated repeat option | One extra choice: repeat the last effective action until its effect stops (capped) | Reported vc33 3/3 vs 0/3; lp85 1/3 vs 0/3 (lp85 is reserved; disclose) | Low | Helps only games with repeatable effects |
+| B. Cross-level effect beliefs | Per-game evidence of which actions and click targets cause effects, kept across levels with decay, biasing exploration | Reported B1 18 vs 17 levels; cd82 Level 2 in 2/3 seeds vs 0/3 without beliefs | Medium | Acts only after Level 1, which few runs reach |
+| C. Prerequisite planner (deferred) | Search over learned operators including temporary backward steps | Reported B2 16 levels (worse); revised B2 executed no plans | High | Never executes a plan |
+
+Selection rule: (1) if fewer than one third of I1 runs complete Level 1 at the chosen budget, choose A; (2) otherwise, if logs show effective actions being rediscovered after level changes, choose B; (3) if unclear, choose A; (4) C enters only after it solves a synthetic task needing a temporarily backward step and after B shows reliable operators. Changing I2 away from the rule's outcome requires explicit team approval.
+
 The candidate table above is illustrative rather than exhaustive. Its presence should not shape the base software architecture beyond the clean extension points already justified by the current experiments. RND and return-to-frontier planning remain optional higher-effort candidates. Do not schedule them before diagnostics justify the work. Hyperparameter changes can support a chosen intervention but cannot substitute for a required substantive improvement.
 
 Keep the project focused on the assignment investigation and the Kaggle participation required by it. The same environment, logging, scoring, and submission infrastructure should support the nominated Kaggle code submission, but do not introduce a separate speculative competition system in this planning pass. Any later post-assignment competition work is outside this implementation brief and must not shape today's architecture beyond ordinary clean interfaces.
 
 Keep frame-change rate, unique-state rate, and novelty as distinct measurements. Do not redefine "frame changed" to mean "new state". Report action/undo cycles and repeated-state transitions so visual movement is not mistaken for progress.
+
+### 7.3 Research directions from the wider project
+
+Reported evidence from a separate effort (code and checkpoints not available here; budgets differ — reported runs used 600 actions per level, ours 1,500 per run — so numbers are not comparable):
+
+| Claim | Result | Status |
+|---|---|---|
+| Selected DQN, 17 dev × 3 seeds × 1,500 | 0.337 mean score, 9 levels, no Level 2 | Verified locally |
+| PPO, same grid | 0.067, 12 levels, no Level 2 | Verified locally |
+| Native-Q (prior + learned transitions + Bellman) | Level 2 on 5/13 vs 1/13 with updates off; thousands of actions per level | Reported |
+| B0/B1/B2 native-Q, +hypotheses, +planner | 17 / 18 / 16 levels; cd82 Level 2 2/3 seeds with B1 vs 0/3 without beliefs or cross-level transfer | Reported |
+| Generic explorer | Progress 4/24 runs vs 1/24 for event-repeat | Reported |
+| vc33 causal planner | 3/7 levels on vc33; 0 levels in 36 runs elsewhere (recognition failed) | Reported |
+
+**Principal bottleneck:** locally, reaching any progress at all (about 80% of runs never complete Level 1); in the reported work, retaining causal knowledge across levels and inferring goals. Recognition of objects and controls must be general before planning helps.
+
+**Experiment cards** (each runs inside both DQN and PPO): hypothesis → change → observable mechanism → tests → matched baseline → failure → promotion.
+
+| Step | I1 count bonus | A event-terminated repeat | B cross-level beliefs |
+|---|---|---|---|
+| Change in DQN | Bonus in TD target | Option in the action set; γ^k over k steps | Beliefs reweight the structured explorer |
+| Change in PPO | Bonus added to rollout rewards before advantages | Option as one decision; summed rewards, γ^k | Beliefs bias action-type and click logits |
+| Mechanism | Bonus nonzero; values shift; unique states per run | Option chosen, length > 1, stops with the effect | Beliefs update per level; post-Level-1 choices differ from a reset-beliefs copy |
+| Tests | β = 0 reproduces baseline; no bonus on undo loops | Synthetic task needing repetition; every step charged; masks respected | Posterior moves with supporting/contradicting evidence; decay; reset between games |
+| Matched baseline | Phase 3 records | V1 (baseline + I1) | V1 (baseline + I1) |
+| Ablation | Learning-off copy | A2 = baseline + A | A2 = baseline + B; beliefs reset each level; shuffled beliefs |
+| Failure | Checks fail after the bug procedure, or interval clearly below zero | Option never chosen or no change in progress runs | Benefit unchanged by reset or shuffled beliefs |
+| Promotion | Interval above zero, or more progress runs with no game regressing; else inconclusive | Same, plus progress on at least two game families | Same, plus both ablations lose the gain |
+
+**Reuse:** adapter observation and budget accounting (`src/adapter.py`), structured explorer (`src/dqn_v1/exploration.py`), learner `observe()` hooks, run controller records (`src/run.py`), grid scripts (`scripts/run_phase3.py`, `scripts/summarize_phase3.py`), Phase 3 records. **New:** novelty counter, guard test, checkpoint/seed resolution in the run controller, option wrapper or belief table with synthetic tests, activation logging. **Missing evidence:** code and checkpoints for the wider project's native-Q, B0–B2, generic explorer, event-repeat, vc33 planner and sc25 goal prior; the teammate's training code for the DQN encoder (needed for a deployment checkpoint). None is assumed to exist.
 
 ## 8. Reporting and statistical analysis
 
@@ -438,25 +527,60 @@ Report:
 - Learning/adaptation curves against actions, with individual seed results where feasible.
 - Compute and offline-training cost separately from evaluation/adaptation cost.
 - Updates-disabled control results and improvement-specific diagnostics.
+- Mean completed-level fraction per game; number of games reaching Level 1, Level 2+ and Level 3+; actions and resets per level gained; how often each module changed a decision (activation counts).
+- Never compare results from different action budgets as equivalent; freeze a candidate before reserved-game evaluation and never tune on those results; recorded trajectories are never deployed as policies (controlled replay is a labelled diagnostic only).
 
 For a fixed game set, use stratified resampling of seeds within games for aggregate uncertainty, retaining paired comparisons where appropriate. If discussing generalisation across games, also resample games and state that this addresses a different uncertainty source. Do not treat timepoints from one trajectory as independent runs.
 
 With only three seeds, intervals are descriptive and can be unstable. Report raw outcomes, including all-zero samples; a zero-width empirical interval does not prove the method can never succeed. Show per-game means and success counts. IQM is optional and may hide rare successes when most outcomes are zero; it must not be the only summary.
 
-## 9. Schedule and phase acceptance
+## 9. Phase-by-phase plan
 
-Dates are targets. If a check fails, fix it before spending the next stage's experiment budget. Record team decisions in one concise log rather than maintaining many overlapping documents.
+No dates. If a check fails, fix it before spending the next stage's experiment budget. Record team decisions in one concise log.
 
-| Dates | Phase | Acceptance evidence |
+| Phase | Name | Status |
 |---|---|---|
-| 22-24 Sep | **Phase 1** — Interface, exposure audit, scoring, submission pipeline | Split recorded; reset probes; scorer route; both teams registered; random agent successfully competition-evaluated; current limits documented |
-| 24 Sep-1 Oct | **Phase 2** — Minimal implementation, architecture integration, and calibration | Both learners solve synthetic checks; submission callbacks preserve learning; masks/rewards/boundaries verified; provisional V0 is replaceable through configuration; architecture-search finalists can be inserted without changing unrelated infrastructure; complete compute estimate |
-| 1-6 Oct | **Phase 3** — Baselines | Matched V0 results, random references, updates-disabled control, official scoring evidence; I1 chosen from diagnostics |
-| 6-12 Oct | **Phase 4** — Improvement 1 | V1 compared with V0 separately for both algorithms; I2 chosen from those results |
-| 12-18 Oct | **Phase 5** — Improvement 2 | V2 results; development-only final selection; configurations and ablations frozen |
-| 18-23 Oct | **Phase 6** — Final evaluation and evidence | Reserved-from-further-tuning public evaluation, ablations, all six required score records, representative trajectories, final tables; unseen claims reserved for Kaggle evaluation |
-| By 24 Oct | **Phase 7** — Both Kaggle submissions | Successfully evaluated nominated code and submitted Paper Track write-up; links, identifiers, timestamps, saved copies |
-| 24-27 Oct | **Phase 8** — Report and Moodle package verification | Eight-page compliant report, matching notebook, evidence, contribution statement, credential-free ZIP |
+| 1 | Interface, exposure, scoring | Done |
+| 2 | Minimal implementation and calibration | Done |
+| 3 | Baselines | Done |
+| 4 | Improvement 1 | **Run; awaiting review and Kaggle baseline submission** |
+| 5 | Improvement 2 | Later |
+| 6 | Final evaluation | Later |
+| 7 | Kaggle submissions | Later |
+| 8 | Report and Moodle package | Later |
+
+### Phase 1 — Interface, exposure audit, scoring, submission pipeline
+**Status:** Done. **Done when:** split recorded; reset probes; scorer route; both teams registered; random agent competition-evaluated; limits documented. **Differences:** the random-agent Kaggle evaluation was deferred and moves into Phase 4.
+
+### Phase 2 — Minimal implementation, architecture integration, calibration
+**Status:** Done. **Done when:** both learners solve synthetic checks; submission callbacks preserve learning; masks/rewards/boundaries verified; representation replaceable through configuration; compute estimate. **Differences:** calibration on the Wits cluster is still pending.
+
+### Phase 3 — Baselines
+**Status:** Done. **Done when:** matched baselines, random references, updates-disabled control, official local scores, I1 chosen. **What happened:** 306 runs (17 dev games × 3 seeds × 6 agents, 1,500 actions); learning-on equalled learning-off; selected DQN adopted without the finalist comparison; I1 = count-based intrinsic reward.
+
+### Phase 4 — Improvement 1 (count-based intrinsic reward)
+**Status:** All steps run except item 3 (needs the user's Kaggle account); not committed, awaiting review. **Goal:** build and evaluate I1 for both algorithms, make the DQN cheat-proof and deployable, secure a Kaggle submission. **Done when:**
+1. Anti-cheat guard test passes, and fails on a planted violation.
+2. Game ID removed from the DQN agent; Phase 3 action traces reproduce exactly.
+3. Valid Kaggle baseline submission recorded (ID, score, timestamp). **Pending: user action.**
+4. I1 activation smoke passes for DQN and PPO.
+5. I1 grid: 17 dev games × 3 seeds × 1,500 actions per algorithm, compared with Phase 3 by the predeclared criteria. **Done** (`docs/PHASE4_RESULTS.md`): DQN +0.009 [0.000, +0.023], PPO +0.001 [−0.0002, +0.003]; both inconclusive.
+6. Budget-sensitivity diagnostic completed. **Done** (`docs/PHASE4_BUDGET_DIAGNOSTIC.md`, 5,000 actions, 5 games): DQN learning-on beats learning-off by +0.007 [+0.00001, +0.020], 3/15 vs 0/15 progress runs (weak, fragile); PPO −0.0002, no effect. The 1,500-action protocol stands; the DQN 5,000-action result is reported as a labelled diagnostic.
+7. `docs/EXPOSURE.md` updated with cluster-research exposure.
+8. Every negative result passed the bug-versus-research-failure procedure and is labelled; module-activation counts logged. **Done:** I1 is a *genuine research null at this budget* (bonus fired on about 1,300–1,400 steps per run, reached the learning targets and changed actions in all 102 runs; gradient counts equal baseline). PPO budget diagnostic: genuine null. DQN budget diagnostic: weak positive, not claimed.
+9. I2 chosen between A and B using the predeclared selection rule. **Done: A (event-terminated repeat option).** Rule 1 fired: 0.235 (DQN) and 0.216 (PPO) of I1 runs made progress, under one third.
+
+### Phase 5 — Improvement 2
+**Status:** Later. **Goal:** V2 = baseline + I1 + I2 and ablation A2 = baseline + I2, for both algorithms, using the experiment card for A or B; the prerequisite planner stays out unless it passes its synthetic gate. **Done when:** V2 results; development-only final selection; configurations and ablations frozen.
+
+### Phase 6 — Final evaluation and evidence
+**Status:** Later. **Done when:** reserved-from-further-tuning evaluation, ablations, all six required score records, representative trajectories, final tables; unseen claims reserved for Kaggle evaluation.
+
+### Phase 7 — Both Kaggle submissions
+**Status:** Later. **Done when:** nominated code successfully evaluated and Paper Track write-up submitted; links, identifiers, timestamps, saved copies.
+
+### Phase 8 — Report and Moodle package verification
+**Status:** Later. **Done when:** eight-page compliant report, matching notebook, evidence, contribution statement, credential-free ZIP uploaded before the Moodle deadline.
 
 Start the report outline during baseline work and draft results after every stage. Reserve about half the main-content space for results, ablations, and analysis. Essential evidence must fit within eight pages; supplementary material cannot replace it.
 
@@ -472,14 +596,15 @@ Start the report outline during baseline work and draft results after every stag
 - [ ] Hyperparameters, budgets, exposure, seeds, methods, limitations, ablations, and resource use included.
 - [ ] Reused sources and AI assistance declared; member contribution statement included.
 - [ ] No API keys or credentials in submitted files.
-- [ ] ZIP named `Kaggle-team-name.zip`; one member uploads and verifies receipt before 27 October, 23:59 SAST.
+- [ ] ZIP named `Kaggle-team-name.zip`; one member uploads and verifies receipt before the Moodle deadline.
 
 ## 11. Questions to resolve with the tutor or competition documentation
 
-1. Do the chosen DQN/Double DQN and PPO baselines satisfy course/non-course eligibility?
-2. If official local scoring is unavailable, what evidence is acceptable for each required version beyond the nominated Kaggle entry?
-3. Is the disclosed exposure history and proposed held-out split acceptable?
+1. Do the chosen DQN/Double DQN and PPO baselines satisfy course/non-course eligibility? *(Reported approved by the group; keep written evidence.)*
+2. If official local scoring is unavailable, what evidence is acceptable for each required version beyond the nominated Kaggle entry? *(Local SDK scorecards used; confirm acceptability.)*
+3. Is the disclosed exposure history and proposed held-out split acceptable? *(Reported approved by the group; keep written evidence.)*
 4. What exactly persists through the competition agent lifecycle, and what online updates are permitted within its runtime limits?
+5. Is a frozen encoder pretrained offline on public games acceptable inside the DQN baseline, if not already covered by the approval in 1?
 
 Proceed with independent implementation and verification while these questions are resolved. Do not let an unanswered optional design question halt the whole project.
 
@@ -490,13 +615,33 @@ Proceed with independent implementation and verification while these questions a
 - [Official ARC scoring methodology](https://docs.arcprize.org/methodology), consulted during the review on 22 September 2026. Pin the scoring implementation/version used in experiments.
 - [Official reset API](https://docs.arcprize.org/api-reference/commands/start-or-reset-game-instance), consulted during the review. Verify equivalence with the pinned SDK and competition interface.
 - [Official Kaggle starter documentation](https://docs.arcprize.org/arc-prize-2026), consulted during the review. A completed notebook run and a successfully evaluated competition submission are distinct steps.
+- `BASELINE_EXPERIMENT_HISTORY.txt`, `docs/PHASE3_HANDOFF.md`, `docs/PHASE3_RESULTS.md`: how the selected DQN was chosen and Phase 3 outcomes (verified locally where stated).
+- Team research handoff (cluster experiments E001–E074) and the wider-project research context: [H] reported evidence, code and checkpoints not available; not re-run here.
 - [PPO: Schulman et al.](https://arxiv.org/abs/1707.06347), algorithm reference.
 - [Statistical evaluation: Agarwal et al.](https://arxiv.org/abs/2108.13264), uncertainty and aggregate-reporting reference.
 - Add the exact DQN/Double DQN, GAE, code implementation, and chosen improvement references when adopted. Verify current Kaggle rules and limits directly; this document does not certify their unresolved values.
 
-**Immediate next step:** complete the reset/scoring/submission-interface checks and build the small modular RL scaffold while the architecture-selection experiment finishes in parallel. Record any missing evidence that materially affects experiment meaning, but do not block ordinary reversible implementation on unrelated missing notes. Do not freeze the final RL architecture until the predeclared shortlist has undergone matched reward-based validation.
+**Immediate next step:** user reviews Phase 4 and makes the Kaggle baseline submission (item 3); then, on approval, Phase 5 implements I2 = A. Record any missing evidence that materially affects experiment meaning, but do not block ordinary reversible implementation on unrelated missing notes.
 
 ---
+
+## Change log
+
+| # | Section | Edit | Reason |
+|---|---|---|---|
+| 1 | Header, §2, §9, §10 | Dates removed; status column and per-phase headings | Dates are ignored by team decision; phases made visible |
+| 2 | §1 (architecture status) | Selected DQN adopted; finalist comparison waived (disclosed) | Group decision recorded in Phase 3 |
+| 3 | §1 rules | Anti-cheating and anti-overfitting block | Top-priority team rule |
+| 4 | §2a | What changed after Phase 3 | Learning-off parity, game-ID dependence, exposure, no Kaggle submission |
+| 5 | §4.1 | Baseline composition and central research question | Disclose pretrained encoder; align with wider project |
+| 6 | §5.4 | `DQN_V1_DEFAULTS` noted | Adopted baseline settings |
+| 7 | §6 | Bug-versus-research-failure procedure | Prevent rejecting ideas because of defects |
+| 8 | §7.1 | Stage vs code-version label mapping | Code labels collide with assignment labels |
+| 9 | §7.2 | I1 selected with safeguards; null-result annotations; I2 shortlist and rule | Group choice; wider-project evidence |
+| 10 | §7.3 | Verified-vs-reported evidence, bottleneck, experiment cards, reuse and missing evidence | Wider-project research context |
+| 11 | §8 | Level-fraction, depth counts, activation counts, budget-matching rules | Wider-project evaluation rules |
+| 12 | §11, §12 | Tutor-question status; sources added | Keep evidence trail |
+| 13 | §9 Phase 4 | Phase 4 outcomes recorded: I1 inconclusive, budget diagnostic, I2 = A | Results exist; criteria were predeclared |
 
 <planning_task>
 <role>

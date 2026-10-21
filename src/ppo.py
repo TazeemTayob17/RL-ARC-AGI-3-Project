@@ -16,6 +16,7 @@ import torch.nn.functional as F
 from torch.distributions import Categorical
 
 from .adapter import N_SIMPLE, CLICK_TYPE, Observation, Transition, type_mask
+from .intrinsic import NoveltyCounter
 from .model import ActorCritic, ObsBatch, collate, model_info
 
 NEG = -1e9
@@ -49,6 +50,7 @@ class PPO:
         self.net = ActorCritic(self.arch)
         self.opt = torch.optim.Adam(self.net.parameters(), lr=self.p["lr"], eps=1e-5)
         self.buf: list = []
+        self.novelty = NoveltyCounter(float(self.p.get("intrinsic_beta", 0.0)))
         self._pending = None
         self.n_act = self.rollout_updates = self.grad_steps = self.partial_rollouts = 0
         self.ema: dict = {}
@@ -73,7 +75,7 @@ class PPO:
     def observe(self, t: Transition) -> None:
         obs, idx, lp, v = self._pending
         assert t.action == idx, "observe() must follow the matching act()"
-        self.buf.append((obs, idx, lp, v, t.reward, t.terminal))
+        self.buf.append((obs, idx, lp, v, t.reward, t.terminal, self.novelty.bonus(t)))   # I1 bonus kept apart
         if len(self.buf) >= self.p["rollout"]:
             self._end_rollout(0.0 if t.terminal else self._value(t.next_obs))
 
@@ -102,7 +104,7 @@ class PPO:
         actions = torch.tensor([b[1] for b in buf], dtype=torch.long)
         old_lp = torch.tensor([b[2] for b in buf], dtype=torch.float32)
         values = np.array([b[3] for b in buf], dtype=np.float32)
-        rewards = np.array([b[4] for b in buf], dtype=np.float32)
+        rewards = np.array([b[4] + b[6] for b in buf], dtype=np.float32)   # extrinsic + I1 bonus (0 when beta = 0)
         dones = np.array([b[5] for b in buf], dtype=np.float32)
         adv = compute_gae(rewards, values, dones, last_value, p["gamma"], p["gae_lambda"])
         ret = torch.from_numpy(adv + values)
@@ -139,7 +141,8 @@ class PPO:
     def diagnostics(self) -> dict:
         return {"algo": "ppo", "actions_seen": self.n_act, "rollout_update_events": self.rollout_updates,
                 "gradient_steps": self.grad_steps, "partial_rollouts": self.partial_rollouts,
-                "updates_disabled": self.updates_disabled, **{f"{k}_ema": v for k, v in self.ema.items()}}
+                "updates_disabled": self.updates_disabled, "intrinsic": self.novelty.summary(),
+                **{f"{k}_ema": v for k, v in self.ema.items()}}
 
     def model_info(self) -> dict:
         return model_info(self.net, self.arch)
