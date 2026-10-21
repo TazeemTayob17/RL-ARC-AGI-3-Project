@@ -93,41 +93,15 @@ class SelectedEffectModel(nn.Module):
         self.action = VectorInterface()
 
 
-PUBLIC_GAMES = [
-    "ar25", "bp35", "dc22", "ft09", "g50t", "ka59", "lf52", "lp85", "r11l", "s5i5",
-    "sb26", "sk48", "su15", "tn36", "tr87", "tu93", "vc33", "cd82", "ls20", "m0r0",
-    "sp80", "re86", "cn04", "wa30", "sc25",
-]
-PUBLIC_FOLDS = [
-    ["bp35", "sb26", "tu93", "sk48", "r11l"],
-    ["vc33", "tn36", "tr87", "wa30", "s5i5"],
-    ["lf52", "ls20", "su15", "ar25", "sp80"],
-    ["dc22", "re86", "ka59", "lp85", "g50t"],
-    ["sc25", "ft09", "cn04", "cd82", "m0r0"],
-]
-CHECKPOINT_STEM = "E-onehotcnn__T-stack2__A-vector__U-effect"
-
-
-def fold_for_game(game: str) -> int:
-    for i, games in enumerate(PUBLIC_FOLDS):
-        if game in games:
-            return i
-    raise ValueError(
-        f"DQN V1 currently reproduces the selected public cross-fold baseline only; "
-        f"no frozen deployment checkpoint exists for unknown game {game!r}."
-    )
-
-
-def load_prior(game: str, assets_root: Path, device: torch.device):
-    fold = fold_for_game(game)
-    path = assets_root / "checkpoints" / f"{CHECKPOINT_STEM}__f{fold}__s11.pt"
+def load_prior(path: Path, device: torch.device):
+    """Load a frozen prior from a checkpoint path chosen by the run controller (the learner never sees a game id)."""
     obj = torch.load(path, map_location="cpu", weights_only=False)
     model = SelectedEffectModel()
     model.load_state_dict(obj["state_dict"], strict=True)
     model.to(device).eval()
     for p in model.parameters():
         p.requires_grad_(False)
-    return model, fold, path
+    return model
 
 
 def state_outputs(model, grid: np.ndarray, prev: np.ndarray, available: list[int], device: torch.device):

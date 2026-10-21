@@ -113,6 +113,7 @@ def identity(cfg: RunConfig, model_info: dict | None = None) -> dict:
     return {
         "schema_version": SCHEMA_VERSION,
         "run_id": c.run_id(),
+        "stage": c.params.get("stage"),            # assignment stage (V0/V1/V2/A2); `version` is only a code label
         "config_hash": c.hash(),
         "config": c.to_dict(),
         "architecture_id": (model_info or {}).get("architecture", c.arch["id"]),

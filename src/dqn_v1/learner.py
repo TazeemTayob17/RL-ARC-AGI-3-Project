@@ -10,13 +10,13 @@ import numpy as np
 import torch
 
 from ..adapter import N_SIMPLE, SIMPLE_IDS, Observation, Transition, action_to_index, index_to_action
+from ..intrinsic import NoveltyCounter
 from .action_bank import ActionKey
 from .agent import DQNAgent
 from .exploration import SELECTOR, StructuredExplorer
-from .prior import PUBLIC_GAMES, load_prior, state_outputs
+from .prior import load_prior, state_outputs
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / "assets" / "dqn_v1"
 
 SYSTEM = {
     "id": "dqn_v1_selected",
@@ -50,11 +50,15 @@ def _from_index(idx: int) -> ActionKey:
 class DQNV1:
     name = "dqn_v1"
 
-    def __init__(self, game: str, params: dict, updates_disabled: bool = False):
-        self.game = game
+    def __init__(self, params: dict, updates_disabled: bool = False, *, prior_path: Path, fold: int,
+                 seed_offset: int = 0, deployment: bool = False):
+        """The run controller supplies the checkpoint path, fold and seed offset (see src/checkpoint_resolver.py)."""
         self.p = dict(params)
         self.updates_disabled = bool(updates_disabled)
         self.device = torch.device("cpu")
+        self.checkpoint, self.fold = Path(prior_path), int(fold)
+        self.seed_offset, self.deployment = int(seed_offset), bool(deployment)
+        self.novelty = NoveltyCounter(float(self.p.get("intrinsic_beta", 0.0)))
 
     def _cfg(self):
         return {
@@ -65,14 +69,10 @@ class DQNV1:
         }
 
     def start_run(self, seed: int) -> None:
-        if self.game not in PUBLIC_GAMES:
-            # The exact selected result used cross-fold public checkpoints. Do not
-            # silently pretend one of them is a hidden-game deployment model.
-            load_prior(self.game, ASSETS, self.device)
         self.seed = int(seed)
-        self.prior, self.fold, self.checkpoint = load_prior(self.game, ASSETS, self.device)
-        game_idx = PUBLIC_GAMES.index(self.game)
-        run_seed = self.seed * 100003 + game_idx * 9173
+        self.prior = load_prior(self.checkpoint, self.device)
+        self.novelty.reset()
+        run_seed = self.seed * 100003 + self.seed_offset
         random.seed(run_seed); np.random.seed(run_seed & 0xFFFFFFFF); torch.manual_seed(run_seed)
         self.explorer = StructuredExplorer()
         self.system = dict(SYSTEM)
@@ -125,7 +125,8 @@ class DQNV1:
             next_state, _, _, _, _, nav = self._features(t.next_obs)
             next_available = tuple(nav)
 
-        self.agent.observe(state, available, action, reward, next_state, next_available, bool(t.terminal))
+        bonus = self.novelty.bonus(t)    # I1: training signal only, kept apart from the extrinsic reward
+        self.agent.observe(state, available, action, reward + bonus, next_state, next_available, bool(t.terminal))
         if reward > 0 or t.info.get("state") == "WIN":
             self.since_progress = 0
         else:
@@ -143,6 +144,8 @@ class DQNV1:
             "fold": self.fold,
             "prior_checkpoint": str(self.checkpoint.relative_to(ROOT)),
             "selector": SELECTOR["id"],
+            "deployment_checkpoint": self.deployment,
+            "intrinsic": self.novelty.summary(),
             **self.agent.summary(),
         }
 
