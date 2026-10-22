@@ -151,6 +151,7 @@ class DQNAgent:
         next_state: np.ndarray,
         next_available: tuple[int, ...],
         terminal: bool,
+        steps: int = 1,
     ) -> None:
         step = StepTransition(
             state=np.asarray(state, dtype=np.float32).copy(),
@@ -161,6 +162,7 @@ class DQNAgent:
             next_state=np.asarray(next_state, dtype=np.float32).copy(),
             next_available=tuple(int(x) for x in next_available),
             terminal=bool(terminal),
+            steps=int(steps),
         )
         for t in self.nstep.append(step):
             self.replay.add(t)

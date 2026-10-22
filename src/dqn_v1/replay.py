@@ -18,6 +18,7 @@ class StepTransition:
     next_state: np.ndarray
     next_available: tuple[int, ...]
     terminal: bool
+    steps: int = 1               # primitive environment steps behind this transition (an option has k > 1)
 
 
 @dataclass
@@ -46,14 +47,16 @@ class NStepAccumulator:
         terminal = False
         last = self.q[0]
         used = 0
+        prim = 0
         for t in self.q:
             reward += gamma * float(t.reward)
             used += 1
+            prim += int(t.steps)
             last = t
             terminal = bool(t.terminal)
             if terminal or used >= self.n_step:
                 break
-            gamma *= self.gamma
+            gamma *= self.gamma ** int(t.steps)
         first = self.q[0]
         self.q.popleft()
         return ReplayTransition(
@@ -65,7 +68,7 @@ class NStepAccumulator:
             next_state=last.next_state,
             next_available=last.next_available,
             terminal=terminal,
-            gamma_n=self.gamma ** used,
+            gamma_n=self.gamma ** prim,
             n_steps=used,
         )
 

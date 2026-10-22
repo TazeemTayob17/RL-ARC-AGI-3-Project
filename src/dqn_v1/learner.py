@@ -10,7 +10,7 @@ import numpy as np
 import torch
 
 from ..adapter import N_SIMPLE, SIMPLE_IDS, Observation, Transition, action_to_index, index_to_action
-from ..intrinsic import NoveltyCounter
+from ..intrinsic import NoveltyCounter, option_bonus
 from .action_bank import ActionKey
 from .agent import DQNAgent
 from .exploration import SELECTOR, StructuredExplorer
@@ -125,8 +125,9 @@ class DQNV1:
             next_state, _, _, _, _, nav = self._features(t.next_obs)
             next_available = tuple(nav)
 
-        bonus = self.novelty.bonus(t)    # I1: training signal only, kept apart from the extrinsic reward
-        self.agent.observe(state, available, action, reward + bonus, next_state, next_available, bool(t.terminal))
+        bonus = option_bonus(self.novelty, t, float(self.p.get("gamma", 0.99)))   # I1: training signal only, kept apart from the extrinsic reward
+        self.agent.observe(state, available, action, reward + bonus, next_state, next_available, bool(t.terminal),
+                           steps=int(t.info.get("k", 1)))
         if reward > 0 or t.info.get("state") == "WIN":
             self.since_progress = 0
         else:

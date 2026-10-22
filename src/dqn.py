@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 
 from .adapter import GRID, N_ACTIONS, N_SIMPLE, N_TYPES, Observation, Transition, sample_type_uniform, type_mask
-from .intrinsic import NoveltyCounter
+from .intrinsic import NoveltyCounter, option_bonus
 from .model import ObsBatch, QNet, collate, model_info
 
 NEG = -1e9   # finite mask value: keeps every intermediate finite (no 0 * -inf)
@@ -68,6 +68,7 @@ class DQN:
         self.action = np.zeros(cap, np.int16)
         self.reward = np.zeros(cap, np.float32)
         self.intrinsic = np.zeros(cap, np.float32)          # I1 bonus, stored beside the extrinsic reward
+        self.disc = np.zeros(cap, np.float32)               # gamma**k: k = primitive steps of the transition (option)
         self.novelty = NoveltyCounter(float(self.p.get("intrinsic_beta", 0.0)))
         self.done = np.zeros(cap, bool)
         self.size = self.ptr = 0
@@ -93,7 +94,8 @@ class DQN:
         self.store.put(i, t.obs)
         self.next_store.put(i, t.next_obs)
         self.action[i], self.reward[i], self.done[i] = t.action, t.reward, t.terminal
-        self.intrinsic[i] = self.novelty.bonus(t)
+        self.intrinsic[i] = option_bonus(self.novelty, t, self.p["gamma"])
+        self.disc[i] = self.p["gamma"] ** int(t.info.get("k", 1))
         self.ptr = (i + 1) % self.p["replay_capacity"]
         self.size = min(self.size + 1, self.p["replay_capacity"])
         self.n_seen += 1
@@ -114,6 +116,7 @@ class DQN:
         b, nb = self.store.get(idx), self.next_store.get(idx)
         a = torch.from_numpy(self.action[idx].astype(np.int64))
         r, d = torch.from_numpy(self.reward[idx] + self.intrinsic[idx]), torch.from_numpy(self.done[idx])
+        g = torch.from_numpy(self.disc[idx])
         q = self.net(b).gather(1, a[:, None]).squeeze(1)
         with torch.no_grad():
             qt = self.target(nb)
@@ -123,7 +126,7 @@ class DQN:
             else:
                 nxt = qt.masked_fill(~nb.mask, NEG).max(1).values
             nxt = torch.where(nb.mask.any(1), nxt, torch.zeros_like(nxt))
-            y = torch.where(d, r, r + p["gamma"] * nxt)            # terminal: no bootstrap, never 0 * -inf
+            y = torch.where(d, r, r + g * nxt)            # terminal: no bootstrap, never 0 * -inf
         loss = F.huber_loss(q, y, delta=p["huber_delta"])
         self.opt.zero_grad(set_to_none=True)
         loss.backward()

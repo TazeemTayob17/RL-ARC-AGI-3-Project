@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from torch.distributions import Categorical
 
 from .adapter import N_SIMPLE, CLICK_TYPE, Observation, Transition, type_mask
-from .intrinsic import NoveltyCounter
+from .intrinsic import NoveltyCounter, option_bonus
 from .model import ActorCritic, ObsBatch, collate, model_info
 
 NEG = -1e9
@@ -75,7 +75,8 @@ class PPO:
     def observe(self, t: Transition) -> None:
         obs, idx, lp, v = self._pending
         assert t.action == idx, "observe() must follow the matching act()"
-        self.buf.append((obs, idx, lp, v, t.reward, t.terminal, self.novelty.bonus(t)))   # I1 bonus kept apart
+        self.buf.append((obs, idx, lp, v, t.reward, t.terminal, option_bonus(self.novelty, t, self.p["gamma"]),
+                         int(t.info.get("k", 1))))                  # I1 bonus kept apart; k = primitive steps (option)
         if len(self.buf) >= self.p["rollout"]:
             self._end_rollout(0.0 if t.terminal else self._value(t.next_obs))
 
@@ -106,7 +107,9 @@ class PPO:
         values = np.array([b[3] for b in buf], dtype=np.float32)
         rewards = np.array([b[4] + b[6] for b in buf], dtype=np.float32)   # extrinsic + I1 bonus (0 when beta = 0)
         dones = np.array([b[5] for b in buf], dtype=np.float32)
-        adv = compute_gae(rewards, values, dones, last_value, p["gamma"], p["gae_lambda"])
+        ks = np.array([b[7] for b in buf])
+        gamma = p["gamma"] if (ks == 1).all() else p["gamma"] ** ks.astype(np.float32)   # gamma**k per step (options)
+        adv = compute_gae(rewards, values, dones, last_value, gamma, p["gae_lambda"])
         ret = torch.from_numpy(adv + values)
         adv = torch.from_numpy(adv)
         n = len(buf)
@@ -160,14 +163,16 @@ class PPO:
 
 
 def compute_gae(rewards, values, dones, last_value, gamma, lam) -> np.ndarray:
-    """GAE that never crosses a terminal boundary: done[t] cuts both the bootstrap and the trace."""
+    """GAE that never crosses a terminal boundary: done[t] cuts both the bootstrap and the trace.
+    `gamma` is a scalar, or one discount per step (gamma**k for an option of k primitive steps)."""
     n = len(rewards)
     adv = np.zeros(n, dtype=np.float32)
     gae = 0.0
     for t in reversed(range(n)):
         nxt = last_value if t == n - 1 else values[t + 1]
         nonterm = 1.0 - dones[t]
-        delta = rewards[t] + gamma * nxt * nonterm - values[t]
-        gae = delta + gamma * lam * nonterm * gae
+        g = gamma[t] if isinstance(gamma, np.ndarray) else gamma
+        delta = rewards[t] + g * nxt * nonterm - values[t]
+        gae = delta + g * lam * nonterm * gae
         adv[t] = gae
     return adv
