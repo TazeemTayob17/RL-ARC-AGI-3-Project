@@ -6,6 +6,9 @@ They return NO official score (scorecard() is None), so they can never be mistak
 
     nav  : move a block to a fixed goal on a 5x5 board (keyboard actions 1-4); 30 steps per attempt, then GAME_OVER
     click: click the target square (colour 3) among distractors (colour 4); only ACTION6 legal
+    track: advance a block along a track with ACTION1; any of ACTION2-4 sends it back to the start. Reaching the
+           end needs L advances in a row, which a random policy almost never produces but one repeat option does
+           (Improvement 2 check). 120 steps per attempt, then GAME_OVER
     cue  : two squares with different colours (3 and 4) at random positions; a far-away cue block (colour 5 or 6)
            says which colour is the target. Each square's appearance is visible locally but the cue is ~10+px
            away (receptive field is 9x9), so a policy that beats 0.5 hits per square-click must be using
@@ -137,7 +140,34 @@ class CueTask(_Task):
         return self._raw(self._draw())
 
 
-TASKS = {"nav": NavTask, "click": ClickTask, "cue": CueTask}
+class TrackTask(_Task):
+    available = [1, 2, 3, 4]
+    L, CELL, LIMIT = 6, 9, 120
+
+    def _new_level(self):
+        self.pos, self.t = 0, 0
+
+    def _draw(self):
+        f = np.zeros((64, 64), np.int8)
+        f[20:30, 2 + self.pos * self.CELL: 2 + (self.pos + 1) * self.CELL] = 1
+        f[40:44, 2 + self.L * self.CELL: 2 + (self.L + 1) * self.CELL] = 2          # the end of the track
+        return f
+
+    def reset(self) -> RawFrame:
+        self._new_level()
+        return self._raw(self._draw())
+
+    def send(self, aid, xy) -> RawFrame:
+        self.pos = self.pos + 1 if aid == 1 else 0
+        self.t += 1
+        if self.pos >= self.L:
+            self.levels += 1
+            self._new_level()
+            return self._raw(self._draw())
+        return self._raw(self._draw(), "GAME_OVER" if self.t >= self.LIMIT else "NOT_FINISHED")
+
+
+TASKS = {"nav": NavTask, "click": ClickTask, "cue": CueTask, "track": TrackTask}
 
 
 class SyntheticSession(BaseSession):
