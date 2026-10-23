@@ -67,6 +67,51 @@ def _bucket(a: ActionKey):
     return (6, int(a.x) // 8, int(a.y) // 8) if int(a.action_id) == 6 else (int(a.action_id),)
 
 
+def _component_rarity(g: np.ndarray) -> np.ndarray:
+    """-log((size + 1) / (cells + 1)) of each cell's 4-connected same-colour component.
+
+    Row runs joined with a union-find: the component sizes, and so every value, equal those of a cell-by-cell flood fill.
+    """
+    h, w = g.shape
+    flat = g.reshape(-1)
+    change = np.ones((h, w), dtype=bool)
+    change[:, 1:] = g[:, 1:] != g[:, :-1]
+    starts = np.flatnonzero(change.reshape(-1))
+    run_of_cell = np.cumsum(change.reshape(-1)) - 1
+    length = np.diff(np.append(starts, h * w))
+    row, x0 = starts // w, starts % w
+    x1 = x0 + length
+    color = flat[starts].tolist()
+    x0l, x1l = x0.tolist(), x1.tolist()
+    row_first = np.searchsorted(row, np.arange(h + 1)).tolist()
+    parent = list(range(len(starts)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for y in range(1, h):
+        i, i_end = row_first[y - 1], row_first[y]
+        j, j_end = row_first[y], row_first[y + 1]
+        while i < i_end and j < j_end:
+            if color[i] == color[j] and x0l[i] < x1l[j] and x0l[j] < x1l[i]:
+                ri, rj = find(i), find(j)
+                if ri != rj:
+                    parent[rj] = ri
+            if x1l[i] < x1l[j]:
+                i += 1
+            else:
+                j += 1
+    root = np.asarray([find(i) for i in range(len(starts))], dtype=np.int64)
+    size = np.bincount(root, weights=length, minlength=len(starts))
+    value = np.zeros(len(starts), dtype=np.float64)
+    for r in np.unique(root).tolist():
+        value[r] = -math.log((int(size[r]) + 1.0) / (g.size + 1.0))
+    return value[root][run_of_cell].reshape(h, w)
+
+
 def _visual_salience(grid: np.ndarray) -> np.ndarray:
     g = np.asarray(grid, dtype=np.int64)
     counts = np.bincount(np.clip(g.ravel(), 0, 15), minlength=16).astype(np.float64)
@@ -74,21 +119,7 @@ def _visual_salience(grid: np.ndarray) -> np.ndarray:
     contrast = np.zeros_like(rarity)
     contrast[1:, :] += (g[1:, :] != g[:-1, :]); contrast[:-1, :] += (g[:-1, :] != g[1:, :])
     contrast[:, 1:] += (g[:, 1:] != g[:, :-1]); contrast[:, :-1] += (g[:, :-1] != g[:, 1:])
-    seen = np.zeros((64, 64), dtype=bool)
-    component = np.zeros((64, 64), dtype=np.float64)
-    for y0 in range(64):
-        for x0 in range(64):
-            if seen[y0, x0]:
-                continue
-            color = int(g[y0, x0]); q = [(y0, x0)]; seen[y0, x0] = True; cells = []
-            while q:
-                y, x = q.pop(); cells.append((y, x))
-                for yy, xx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
-                    if 0 <= yy < 64 and 0 <= xx < 64 and not seen[yy, xx] and int(g[yy, xx]) == color:
-                        seen[yy, xx] = True; q.append((yy, xx))
-            val = -math.log((len(cells) + 1.0) / (g.size + 1.0))
-            for y, x in cells:
-                component[y, x] = val
+    component = _component_rarity(g)
     return rarity + 0.35 * contrast + 0.5 * component
 
 

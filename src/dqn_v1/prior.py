@@ -104,7 +104,10 @@ def load_prior(path: Path, device: torch.device):
     return model
 
 
-def state_outputs(model, grid: np.ndarray, prev: np.ndarray, available: list[int], device: torch.device):
+def state_outputs(model, grid: np.ndarray, prev: np.ndarray, available: list[int], device: torch.device,
+                  want_a6_logits: bool = False):
+    """`a6_logits` is None when ACTION6 is unavailable. The explorer only tests that, so unless `want_a6_logits` is set
+    an empty array stands in for the (unused) 4096 click logits."""
     gt = torch.from_numpy(np.asarray(grid, dtype=np.int64)).unsqueeze(0).to(device)
     pt = torch.from_numpy(np.asarray(prev, dtype=np.int64)).unsqueeze(0).to(device)
     hg = torch.zeros((1, 4, 64, 64), dtype=torch.long, device=device)
@@ -119,5 +122,8 @@ def state_outputs(model, grid: np.ndarray, prev: np.ndarray, available: list[int
             at = torch.from_numpy(av).to(device)
             out, _ = model.action(g.expand(len(simple), -1), s.expand(len(simple), -1, -1, -1), at)
             simple_logits = out.cpu().numpy().astype(np.float32)
-        a6_logits = model.action.score_all_action6(g, s)[0].cpu().numpy().astype(np.float32) if 6 in available else None
+        a6_logits = None
+        if 6 in available:
+            a6_logits = (model.action.score_all_action6(g, s)[0].cpu().numpy().astype(np.float32) if want_a6_logits
+                         else np.empty((0,), dtype=np.float32))
     return emb, simple, simple_logits, a6_logits

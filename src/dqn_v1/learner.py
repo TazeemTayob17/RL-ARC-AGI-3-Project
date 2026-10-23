@@ -80,10 +80,15 @@ class DQNV1:
             self.system["learn"] = False
         self.agent = DQNAgent(130, self.system, self._cfg(), run_seed + 17, self.device)
         self.pending = None
+        self._feat_cache = None
         self.last_label = None
         self.since_progress = 0
 
     def _features(self, obs: Observation):
+        """Pure function of the observation. The outcome of one step is the input of the next, so the last result is kept."""
+        key = (obs.frame.tobytes(), obs.prev_frame.tobytes(), obs.mask.tobytes(), obs.progress, obs.high_water)
+        if self._feat_cache is not None and self._feat_cache[0] == key:
+            return self._feat_cache[1]
         available = _available(obs.mask)
         emb, simple, simple_logits, a6_logits = state_outputs(
             self.prior, obs.frame, obs.prev_frame, available, self.device
@@ -92,7 +97,9 @@ class DQNV1:
             emb.reshape(-1),
             np.asarray([obs.progress / 5.0, obs.high_water / 5.0], dtype=np.float32),
         ]).astype(np.float32)
-        return state, emb, simple, simple_logits, a6_logits, available
+        out = (state, emb, simple, simple_logits, a6_logits, available)
+        self._feat_cache = (key, out)
+        return out
 
     def act(self, obs: Observation) -> int:
         state, emb, simple, simple_logits, a6_logits, available = self._features(obs)
