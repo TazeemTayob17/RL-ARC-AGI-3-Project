@@ -59,3 +59,13 @@ class NoveltyCounter:
         return {"beta": self.beta, "calls": self.n_calls, "nonzero": self.n_nonzero,
                 "loop_zeroed": self.n_loop_zeroed, "total_bonus": self.total,
                 "mean_bonus": self.total / max(self.n_nonzero, 1), "unique_states": len(self.counts)}
+
+
+def option_bonus(counter: NoveltyCounter, t: Transition, gamma: float) -> float:
+    """I1 bonus for one learner transition. An option (Improvement 2) arrives as one transition holding its primitive
+    steps in info["steps"]; each primitive step is counted in order and the bonuses are discounted like the rewards.
+    A plain transition is counted exactly as before, so behaviour without options is unchanged."""
+    steps = t.info.get("steps")
+    if not steps:
+        return counter.bonus(t)
+    return sum(gamma ** i * counter.bonus(s) for i, s in enumerate(steps))

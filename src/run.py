@@ -15,7 +15,17 @@ from .learner import Learner, RandomPolicy
 
 
 def build_learner(cfg: RunConfig) -> Learner:
+    """Base learner, wrapped by the Improvement 2 repeat option when the config sets `option_cap`."""
     c = cfg.resolved()
+    learner = _base_learner(c)
+    if int(c.params.get("option_cap", 0)) > 0:
+        from .options import EventRepeat
+        learner = EventRepeat(learner, cap=int(c.params["option_cap"]), prob=float(c.params.get("option_prob", 0.5)),
+                              gamma=float(c.params.get("gamma", 0.99)))
+    return learner
+
+
+def _base_learner(c: RunConfig) -> Learner:
     if c.algo == "random_type":
         return RandomPolicy("type")
     if c.algo == "random_flat":
