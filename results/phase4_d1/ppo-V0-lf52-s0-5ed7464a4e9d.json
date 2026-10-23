@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-lf52-s0-5ed7464a4e9d",
+ "algo": "ppo",
+ "game": "lf52",
+ "seed": 0,
+ "steps": 1487,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 228,
+  "new_state_rate": 0.15332885003362476,
+  "mean_bonus_factor": 0.5120095822469812,
+  "std_bonus_factor": 0.24323296527285126
+ },
+ "masked_online": {
+  "unique_states": 228,
+  "new_state_rate": 0.15332885003362476,
+  "mean_bonus_factor": 0.5120095822469812,
+  "std_bonus_factor": 0.24323296527285126
+ },
+ "masked_final": {
+  "unique_states": 228,
+  "new_state_rate": 0.15332885003362476,
+  "mean_bonus_factor": 0.5120095822469812,
+  "std_bonus_factor": 0.24323296527285126
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-dc22-s0-d6463d9fc664",
+ "algo": "dqn",
+ "game": "dc22",
+ "seed": 0,
+ "steps": 1489,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 478,
+  "new_state_rate": 0.3210208193418402,
+  "mean_bonus_factor": 0.7115688313514799,
+  "std_bonus_factor": 0.22202757494671047
+ },
+ "masked_online": {
+  "unique_states": 478,
+  "new_state_rate": 0.3210208193418402,
+  "mean_bonus_factor": 0.7115688313514799,
+  "std_bonus_factor": 0.22202757494671047
+ },
+ "masked_final": {
+  "unique_states": 478,
+  "new_state_rate": 0.3210208193418402,
+  "mean_bonus_factor": 0.7115688313514799,
+  "std_bonus_factor": 0.22202757494671047
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

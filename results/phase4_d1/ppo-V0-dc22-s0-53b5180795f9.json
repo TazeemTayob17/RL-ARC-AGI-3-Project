@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-dc22-s0-53b5180795f9",
+ "algo": "ppo",
+ "game": "dc22",
+ "seed": 0,
+ "steps": 1489,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 729,
+  "new_state_rate": 0.4895903290799194,
+  "mean_bonus_factor": 0.8126514007022155,
+  "std_bonus_factor": 0.19492428040149853
+ },
+ "masked_online": {
+  "unique_states": 729,
+  "new_state_rate": 0.4895903290799194,
+  "mean_bonus_factor": 0.8126514007022155,
+  "std_bonus_factor": 0.19492428040149853
+ },
+ "masked_final": {
+  "unique_states": 729,
+  "new_state_rate": 0.4895903290799194,
+  "mean_bonus_factor": 0.8126514007022155,
+  "std_bonus_factor": 0.19492428040149853
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

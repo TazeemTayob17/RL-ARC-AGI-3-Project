@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-r11l-s1-718824cac348",
+ "algo": "ppo",
+ "game": "r11l",
+ "seed": 1,
+ "steps": 1422,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1329,
+  "new_state_rate": 0.9345991561181435,
+  "mean_bonus_factor": 0.9601223752044858,
+  "std_bonus_factor": 0.15870081910304734
+ },
+ "masked_online": {
+  "unique_states": 1329,
+  "new_state_rate": 0.9345991561181435,
+  "mean_bonus_factor": 0.9601223752044858,
+  "std_bonus_factor": 0.15870081910304734
+ },
+ "masked_final": {
+  "unique_states": 1329,
+  "new_state_rate": 0.9345991561181435,
+  "mean_bonus_factor": 0.9601223752044858,
+  "std_bonus_factor": 0.15870081910304734
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

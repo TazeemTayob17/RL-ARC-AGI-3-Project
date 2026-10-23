@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-ka59-s1-3b9685d9f59c",
+ "algo": "dqn",
+ "game": "ka59",
+ "seed": 1,
+ "steps": 1486,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 872,
+  "new_state_rate": 0.5868102288021534,
+  "mean_bonus_factor": 0.8592220628863888,
+  "std_bonus_factor": 0.1768423582865789
+ },
+ "masked_online": {
+  "unique_states": 872,
+  "new_state_rate": 0.5868102288021534,
+  "mean_bonus_factor": 0.8592220628863888,
+  "std_bonus_factor": 0.1768423582865789
+ },
+ "masked_final": {
+  "unique_states": 872,
+  "new_state_rate": 0.5868102288021534,
+  "mean_bonus_factor": 0.8592220628863888,
+  "std_bonus_factor": 0.1768423582865789
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

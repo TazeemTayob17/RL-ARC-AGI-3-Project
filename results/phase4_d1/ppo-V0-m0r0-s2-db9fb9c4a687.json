@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-m0r0-s2-db9fb9c4a687",
+ "algo": "ppo",
+ "game": "m0r0",
+ "seed": 2,
+ "steps": 1492,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 867,
+  "new_state_rate": 0.5810991957104558,
+  "mean_bonus_factor": 0.8559405103667039,
+  "std_bonus_factor": 0.17722582623748703
+ },
+ "masked_online": {
+  "unique_states": 867,
+  "new_state_rate": 0.5810991957104558,
+  "mean_bonus_factor": 0.8559405103667039,
+  "std_bonus_factor": 0.17722582623748703
+ },
+ "masked_final": {
+  "unique_states": 867,
+  "new_state_rate": 0.5810991957104558,
+  "mean_bonus_factor": 0.8559405103667039,
+  "std_bonus_factor": 0.17722582623748703
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

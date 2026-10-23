@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-tr87-s0-370304ed6ac5",
+ "algo": "dqn",
+ "game": "tr87",
+ "seed": 0,
+ "steps": 1489,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1370,
+  "new_state_rate": 0.9200805910006716,
+  "mean_bonus_factor": 0.9696404767006784,
+  "std_bonus_factor": 0.10667263441817616
+ },
+ "masked_online": {
+  "unique_states": 1370,
+  "new_state_rate": 0.9200805910006716,
+  "mean_bonus_factor": 0.9696404767006784,
+  "std_bonus_factor": 0.10667263441817616
+ },
+ "masked_final": {
+  "unique_states": 1370,
+  "new_state_rate": 0.9200805910006716,
+  "mean_bonus_factor": 0.9696404767006784,
+  "std_bonus_factor": 0.10667263441817616
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

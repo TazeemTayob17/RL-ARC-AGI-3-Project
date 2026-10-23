@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-cd82-s0-32a763e92d81",
+ "algo": "ppo",
+ "game": "cd82",
+ "seed": 0,
+ "steps": 1486,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 899,
+  "new_state_rate": 0.6049798115746972,
+  "mean_bonus_factor": 0.8569768056562971,
+  "std_bonus_factor": 0.18868239347387464
+ },
+ "masked_online": {
+  "unique_states": 899,
+  "new_state_rate": 0.6049798115746972,
+  "mean_bonus_factor": 0.8569768056562971,
+  "std_bonus_factor": 0.18868239347387464
+ },
+ "masked_final": {
+  "unique_states": 899,
+  "new_state_rate": 0.6049798115746972,
+  "mean_bonus_factor": 0.8569768056562971,
+  "std_bonus_factor": 0.18868239347387464
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

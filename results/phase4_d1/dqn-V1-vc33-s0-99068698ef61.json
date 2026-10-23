@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-vc33-s0-99068698ef61",
+ "algo": "dqn",
+ "game": "vc33",
+ "seed": 0,
+ "steps": 1472,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 409,
+  "new_state_rate": 0.27785326086956524,
+  "mean_bonus_factor": 0.5885985897198608,
+  "std_bonus_factor": 0.2945562516468909
+ },
+ "masked_online": {
+  "unique_states": 409,
+  "new_state_rate": 0.27785326086956524,
+  "mean_bonus_factor": 0.5885985897198608,
+  "std_bonus_factor": 0.2945562516468909
+ },
+ "masked_final": {
+  "unique_states": 409,
+  "new_state_rate": 0.27785326086956524,
+  "mean_bonus_factor": 0.5885985897198608,
+  "std_bonus_factor": 0.2945562516468909
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

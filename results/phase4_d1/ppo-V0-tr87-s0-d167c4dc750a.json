@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-tr87-s0-d167c4dc750a",
+ "algo": "ppo",
+ "game": "tr87",
+ "seed": 0,
+ "steps": 1489,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1472,
+  "new_state_rate": 0.9885829415715245,
+  "mean_bonus_factor": 0.9960809575401662,
+  "std_bonus_factor": 0.0375369891673738
+ },
+ "masked_online": {
+  "unique_states": 1472,
+  "new_state_rate": 0.9885829415715245,
+  "mean_bonus_factor": 0.9960809575401662,
+  "std_bonus_factor": 0.0375369891673738
+ },
+ "masked_final": {
+  "unique_states": 1472,
+  "new_state_rate": 0.9885829415715245,
+  "mean_bonus_factor": 0.9960809575401662,
+  "std_bonus_factor": 0.0375369891673738
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-ft09-s0-2a385e546319",
+ "algo": "ppo",
+ "game": "ft09",
+ "seed": 0,
+ "steps": 1497,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 120,
+  "new_state_rate": 0.08016032064128256,
+  "mean_bonus_factor": 0.3864846643879218,
+  "std_bonus_factor": 0.24492124970019868
+ },
+ "masked_online": {
+  "unique_states": 120,
+  "new_state_rate": 0.08016032064128256,
+  "mean_bonus_factor": 0.3864846643879218,
+  "std_bonus_factor": 0.24492124970019868
+ },
+ "masked_final": {
+  "unique_states": 120,
+  "new_state_rate": 0.08016032064128256,
+  "mean_bonus_factor": 0.3864846643879218,
+  "std_bonus_factor": 0.24492124970019868
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

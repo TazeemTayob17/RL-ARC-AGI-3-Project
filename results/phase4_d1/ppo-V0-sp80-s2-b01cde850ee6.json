@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-sp80-s2-b01cde850ee6",
+ "algo": "ppo",
+ "game": "sp80",
+ "seed": 2,
+ "steps": 1461,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1114,
+  "new_state_rate": 0.7624914442162902,
+  "mean_bonus_factor": 0.9143520748055683,
+  "std_bonus_factor": 0.16294128410319805
+ },
+ "masked_online": {
+  "unique_states": 1114,
+  "new_state_rate": 0.7624914442162902,
+  "mean_bonus_factor": 0.9143520748055683,
+  "std_bonus_factor": 0.16294128410319805
+ },
+ "masked_final": {
+  "unique_states": 1114,
+  "new_state_rate": 0.7624914442162902,
+  "mean_bonus_factor": 0.9143520748055683,
+  "std_bonus_factor": 0.16294128410319805
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

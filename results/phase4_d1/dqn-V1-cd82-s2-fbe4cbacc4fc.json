@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-cd82-s2-fbe4cbacc4fc",
+ "algo": "dqn",
+ "game": "cd82",
+ "seed": 2,
+ "steps": 1486,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 822,
+  "new_state_rate": 0.5531628532974427,
+  "mean_bonus_factor": 0.8346485189973314,
+  "std_bonus_factor": 0.20154269547291007
+ },
+ "masked_online": {
+  "unique_states": 822,
+  "new_state_rate": 0.5531628532974427,
+  "mean_bonus_factor": 0.8346485189973314,
+  "std_bonus_factor": 0.20154269547291007
+ },
+ "masked_final": {
+  "unique_states": 822,
+  "new_state_rate": 0.5531628532974427,
+  "mean_bonus_factor": 0.8346485189973314,
+  "std_bonus_factor": 0.20154269547291007
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

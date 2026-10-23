@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-lf52-s1-9a28456abf96",
+ "algo": "dqn",
+ "game": "lf52",
+ "seed": 1,
+ "steps": 1484,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 494,
+  "new_state_rate": 0.3328840970350404,
+  "mean_bonus_factor": 0.6524059811717182,
+  "std_bonus_factor": 0.27642574516176716
+ },
+ "masked_online": {
+  "unique_states": 494,
+  "new_state_rate": 0.3328840970350404,
+  "mean_bonus_factor": 0.6524059811717182,
+  "std_bonus_factor": 0.27642574516176716
+ },
+ "masked_final": {
+  "unique_states": 494,
+  "new_state_rate": 0.3328840970350404,
+  "mean_bonus_factor": 0.6524059811717182,
+  "std_bonus_factor": 0.27642574516176716
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

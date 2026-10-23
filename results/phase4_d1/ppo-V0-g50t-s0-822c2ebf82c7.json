@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-g50t-s0-822c2ebf82c7",
+ "algo": "ppo",
+ "game": "g50t",
+ "seed": 0,
+ "steps": 1489,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 743,
+  "new_state_rate": 0.4989926124916051,
+  "mean_bonus_factor": 0.8018084130166778,
+  "std_bonus_factor": 0.21378447018645538
+ },
+ "masked_online": {
+  "unique_states": 743,
+  "new_state_rate": 0.4989926124916051,
+  "mean_bonus_factor": 0.8018084130166778,
+  "std_bonus_factor": 0.21378447018645538
+ },
+ "masked_final": {
+  "unique_states": 743,
+  "new_state_rate": 0.4989926124916051,
+  "mean_bonus_factor": 0.8018084130166778,
+  "std_bonus_factor": 0.21378447018645538
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

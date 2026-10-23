@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-su15-s1-4e1aa6e8e645",
+ "algo": "ppo",
+ "game": "su15",
+ "seed": 1,
+ "steps": 1472,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 433,
+  "new_state_rate": 0.29415760869565216,
+  "mean_bonus_factor": 0.5763024002018287,
+  "std_bonus_factor": 0.31019222784808925
+ },
+ "masked_online": {
+  "unique_states": 433,
+  "new_state_rate": 0.29415760869565216,
+  "mean_bonus_factor": 0.5763024002018287,
+  "std_bonus_factor": 0.31019222784808925
+ },
+ "masked_final": {
+  "unique_states": 433,
+  "new_state_rate": 0.29415760869565216,
+  "mean_bonus_factor": 0.5763024002018287,
+  "std_bonus_factor": 0.31019222784808925
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-m0r0-s2-9fe837a8f7be",
+ "algo": "dqn",
+ "game": "m0r0",
+ "seed": 2,
+ "steps": 1491,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 535,
+  "new_state_rate": 0.35881958417169685,
+  "mean_bonus_factor": 0.7444395209451276,
+  "std_bonus_factor": 0.21041229092628522
+ },
+ "masked_online": {
+  "unique_states": 535,
+  "new_state_rate": 0.35881958417169685,
+  "mean_bonus_factor": 0.7444395209451276,
+  "std_bonus_factor": 0.21041229092628522
+ },
+ "masked_final": {
+  "unique_states": 535,
+  "new_state_rate": 0.35881958417169685,
+  "mean_bonus_factor": 0.7444395209451276,
+  "std_bonus_factor": 0.21041229092628522
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

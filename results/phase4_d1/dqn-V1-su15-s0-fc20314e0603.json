@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-su15-s0-fc20314e0603",
+ "algo": "dqn",
+ "game": "su15",
+ "seed": 0,
+ "steps": 1481,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 250,
+  "new_state_rate": 0.1688048615800135,
+  "mean_bonus_factor": 0.47505253726940494,
+  "std_bonus_factor": 0.28142259796167174
+ },
+ "masked_online": {
+  "unique_states": 250,
+  "new_state_rate": 0.1688048615800135,
+  "mean_bonus_factor": 0.47505253726940494,
+  "std_bonus_factor": 0.28142259796167174
+ },
+ "masked_final": {
+  "unique_states": 250,
+  "new_state_rate": 0.1688048615800135,
+  "mean_bonus_factor": 0.47505253726940494,
+  "std_bonus_factor": 0.28142259796167174
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

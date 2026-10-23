@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-ls20-s1-88c516b5883a",
+ "algo": "ppo",
+ "game": "ls20",
+ "seed": 1,
+ "steps": 1489,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1175,
+  "new_state_rate": 0.7891202149093351,
+  "mean_bonus_factor": 0.9259076225849207,
+  "std_bonus_factor": 0.15077243428801645
+ },
+ "masked_online": {
+  "unique_states": 1175,
+  "new_state_rate": 0.7891202149093351,
+  "mean_bonus_factor": 0.9259076225849207,
+  "std_bonus_factor": 0.15077243428801645
+ },
+ "masked_final": {
+  "unique_states": 1175,
+  "new_state_rate": 0.7891202149093351,
+  "mean_bonus_factor": 0.9259076225849207,
+  "std_bonus_factor": 0.15077243428801645
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}
