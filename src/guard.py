@@ -24,11 +24,23 @@ FORBIDDEN_MODULES = {"arc_agi", "arcengine", "agents", "subprocess", "socket", "
 FORBIDDEN_STRINGS = ("environment_files", "baseline_actions", "human_actions", "ARC_API_KEY")
 FORBIDDEN_NAMES = {"game", "game_id", "game_ids", "baseline_actions", "environment_files", "env_files"}
 
-LEARNER_FILES = ["src/learner.py", "src/model.py", "src/dqn.py", "src/ppo.py", "src/intrinsic.py", "src/options.py",
-                 "src/beliefs.py"] + [f"src/dqn_v1/{n}" for n in
-                                      ("__init__.py", "learner.py", "agent.py", "prior.py", "exploration.py",
-                                       "action_bank.py", "qnet.py", "replay.py")]
-SHELL_FILES = ["kaggle/learner_agent.py"]
+# Files that may know the game id or touch the SDK. Everything else under src/ is agent code and is scanned strictly,
+# so a new learner file is covered the moment it exists (no list to forget to update).
+CONTROLLER_FILES = frozenset({"src/run.py", "src/config.py", "src/checkpoint_resolver.py", "src/adapter.py",
+                              "src/bridge.py", "src/synthetic.py", "src/guard.py", "src/runtime_guard.py"})
+
+
+def discover_learner_files(root: Path = ROOT) -> list[str]:
+    found = (p.relative_to(root).as_posix() for p in sorted((root / "src").rglob("*.py")))
+    return [f for f in found if f not in CONTROLLER_FILES]
+
+
+def discover_shell_files(root: Path = ROOT) -> list[str]:
+    return [p.relative_to(root).as_posix() for p in sorted((root / "kaggle").glob("*.py"))]
+
+
+LEARNER_FILES = discover_learner_files()
+SHELL_FILES = discover_shell_files()
 
 
 def game_ids() -> frozenset:

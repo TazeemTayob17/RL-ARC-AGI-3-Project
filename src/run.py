@@ -12,6 +12,7 @@ import numpy as np
 from .adapter import ArcSession, BaseSession, N_SIMPLE, N_TYPES, action_type
 from .config import RunConfig, identity
 from .learner import Learner, RandomPolicy
+from .runtime_guard import learner_section, summary as runtime_guard_summary
 
 
 def build_learner(cfg: RunConfig) -> Learner:
@@ -121,7 +122,8 @@ def run(cfg: RunConfig, arc=None, out_dir: Optional[str] = None, session: Option
         torch.set_num_threads(cfg.threads)
     session = session or make_session(cfg, arc)
     learner = learner or build_learner(cfg)
-    learner.start_run(cfg.seed)
+    with learner_section():
+        learner.start_run(cfg.seed)
     stats = RunStats()
     bg_cpu = _background_cpu_pct()
     t_env = t_act = t_obs = 0.0
@@ -131,18 +133,21 @@ def run(cfg: RunConfig, arc=None, out_dir: Optional[str] = None, session: Option
     try:
         while not session.done:
             t0 = time.perf_counter()
-            a = learner.act(session.obs)
+            with learner_section():
+                a = learner.act(session.obs)
             t1 = time.perf_counter()
             tr = session.step(a)
             t2 = time.perf_counter()
-            learner.observe(tr)
+            with learner_section():
+                learner.observe(tr)
             t3 = time.perf_counter()
             t_act += t1 - t0
             t_env += t2 - t1
             t_obs += t3 - t2
             stats.add(tr, session.tracker.actions)
         t3 = time.perf_counter()
-        learner.finish(session.obs)
+        with learner_section():
+            learner.finish(session.obs)
         t_obs += time.perf_counter() - t3
     except Exception as e:                                   # interface errors are recorded, not hidden
         error = f"{type(e).__name__}: {e}"
@@ -162,6 +167,7 @@ def run(cfg: RunConfig, arc=None, out_dir: Optional[str] = None, session: Option
                             "arc_agi_version": ident["packages"]["arc-agi"]} if card else None),
         "diagnostics": stats.summary(),
         "learner": learner.diagnostics(),
+        "runtime_guard": runtime_guard_summary(),
         "cost": {"wall_s": round(wall, 2), "env_s": round(t_env, 2), "act_s": round(t_act, 2),
                  "observe_update_s": round(t_obs, 2), "peak_rss_mb": _peak_mb(),
                  "s_per_10k_actions": round(wall / max(tk.actions, 1) * 1e4, 1),

@@ -16,6 +16,7 @@ from typing import Optional
 
 from .adapter import RawFrame, Tracker, index_to_action, raw_from_framework
 from .learner import Learner
+from .runtime_guard import learner_section
 
 RESET, ACT = "reset", "act"
 
@@ -27,7 +28,8 @@ class FrameworkBridge:
         self.pending: Optional[int] = None       # action awaiting its outcome
         self.awaiting_reset = False              # last command was our RESET; latest frame is its result
         self.n_observed = 0
-        learner.start_run(seed)
+        with learner_section():
+            learner.start_run(seed)
 
     def choose(self, latest) -> tuple:
         """Return ('act', action_index) or ('reset', None). `latest` is a framework FrameData or a RawFrame."""
@@ -39,7 +41,8 @@ class FrameworkBridge:
         elif self.pending is not None:                            # outcome of the previous learner action
             t = tk.advance(self.pending, raw)
             self.pending = None
-            self.learner.observe(t)
+            with learner_section():
+                self.learner.observe(t)
             self.n_observed += 1
             if t.terminal and t.info["state"] == "GAME_OVER":
                 return self._reset()
@@ -47,7 +50,8 @@ class FrameworkBridge:
             if raw.state in ("NOT_PLAYED", "GAME_OVER"):
                 return self._reset()
             tk.begin_episode(raw)
-        idx = self.learner.act(tk.obs)
+        with learner_section():
+            idx = self.learner.act(tk.obs)
         self.pending = idx
         return ACT, idx
 
@@ -57,7 +61,8 @@ class FrameworkBridge:
         return RESET, None
 
     def finish(self) -> None:
-        self.learner.finish(self.tracker.obs)
+        with learner_section():
+            self.learner.finish(self.tracker.obs)
 
 
 def to_game_action(idx: int):
