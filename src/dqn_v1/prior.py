@@ -104,6 +104,21 @@ def load_prior(path: Path, device: torch.device):
     return model
 
 
+RANDOM_PRIOR_SEED = 20240  # fixed, game-independent: every run and game gets the same random frozen encoder
+
+
+def random_prior(device: torch.device):
+    """Prior-free ablation: the same frozen architecture with random weights (no pretraining on any game)."""
+    state = torch.random.get_rng_state()
+    torch.manual_seed(RANDOM_PRIOR_SEED)
+    model = SelectedEffectModel()
+    torch.random.set_rng_state(state)                 # leave the caller's RNG stream untouched
+    model.to(device).eval()
+    for p in model.parameters():
+        p.requires_grad_(False)
+    return model
+
+
 def state_outputs(model, grid: np.ndarray, prev: np.ndarray, available: list[int], device: torch.device,
                   want_a6_logits: bool = False):
     """`a6_logits` is None when ACTION6 is unavailable. The explorer only tests that, so unless `want_a6_logits` is set
