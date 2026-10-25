@@ -194,14 +194,14 @@ class DQNAgent:
         keys, acts_np = self.bank.encode_candidates(t.available)
         if not keys:
             raise ValueError("Replay transition has no current legal actions")
-        idx = self._chosen_index(keys, t.action_key)
+        idx = self.bank.index_of(t.available, t.action_key)
         return self.online.q_values(self._to(t.state), self._to(acts_np))[idx]
 
     def _current_logits(self, t) -> torch.Tensor:
         keys, acts_np = self.bank.encode_candidates(t.available)
         if not keys:
             raise ValueError("Replay transition has no current legal actions")
-        idx = self._chosen_index(keys, t.action_key)
+        idx = self.bank.index_of(t.available, t.action_key)
         return self.online.logits(self._to(t.state), self._to(acts_np))[idx]
 
     def _next_value_scalar(self, t) -> torch.Tensor:

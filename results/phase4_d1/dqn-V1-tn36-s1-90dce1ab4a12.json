@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-tn36-s1-90dce1ab4a12",
+ "algo": "dqn",
+ "game": "tn36",
+ "seed": 1,
+ "steps": 1477,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1120,
+  "new_state_rate": 0.7582938388625592,
+  "mean_bonus_factor": 0.8768959951035413,
+  "std_bonus_factor": 0.23220606612980657
+ },
+ "masked_online": {
+  "unique_states": 1120,
+  "new_state_rate": 0.7582938388625592,
+  "mean_bonus_factor": 0.8768959951035413,
+  "std_bonus_factor": 0.23220606612980657
+ },
+ "masked_final": {
+  "unique_states": 1120,
+  "new_state_rate": 0.7582938388625592,
+  "mean_bonus_factor": 0.8768959951035413,
+  "std_bonus_factor": 0.23220606612980657
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

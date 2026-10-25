@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-tn36-s0-a151d4de218d",
+ "algo": "ppo",
+ "game": "tn36",
+ "seed": 0,
+ "steps": 1476,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 955,
+  "new_state_rate": 0.6470189701897019,
+  "mean_bonus_factor": 0.8284715456411553,
+  "std_bonus_factor": 0.2551113960467813
+ },
+ "masked_online": {
+  "unique_states": 955,
+  "new_state_rate": 0.6470189701897019,
+  "mean_bonus_factor": 0.8284715456411553,
+  "std_bonus_factor": 0.2551113960467813
+ },
+ "masked_final": {
+  "unique_states": 955,
+  "new_state_rate": 0.6470189701897019,
+  "mean_bonus_factor": 0.8284715456411553,
+  "std_bonus_factor": 0.2551113960467813
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

@@ -20,6 +20,7 @@ class ActionBank:
         self.click_size = int(click_size)
         self.max_action_id = int(max_action_id)
         self.action_dim = self.max_action_id + 3  # one-hot ids + x + y + coordinate-valid flag
+        self._cache: dict = {}                     # legal-action set -> (keys, encoded rows, key -> row index); callers must not modify the rows
 
     def encode(self, a: ActionKey) -> np.ndarray:
         v = np.zeros(self.action_dim, dtype=np.float32)
@@ -46,9 +47,20 @@ class ActionBank:
                 out.append(ActionKey(aid))
         return out
 
+    def _entry(self, available):
+        sig = tuple(sorted(set(int(x) for x in available)))
+        hit = self._cache.get(sig)
+        if hit is None:
+            keys = self.candidates(sig)
+            arr = (np.stack([self.encode(a) for a in keys], axis=0) if keys
+                   else np.zeros((0, self.action_dim), dtype=np.float32))
+            index = {(k.action_id, k.x, k.y): i for i, k in enumerate(keys)}
+            hit = self._cache[sig] = (keys, arr, index)
+        return hit
+
     def encode_candidates(self, available: list[int] | tuple[int, ...]):
-        keys = self.candidates(available)
-        if not keys:
-            return keys, np.zeros((0, self.action_dim), dtype=np.float32)
-        arr = np.stack([self.encode(a) for a in keys], axis=0)
+        keys, arr, _ = self._entry(available)
         return keys, arr
+
+    def index_of(self, available, action_key: tuple) -> int:
+        return self._entry(available)[2][(int(action_key[0]), int(action_key[1]), int(action_key[2]))]

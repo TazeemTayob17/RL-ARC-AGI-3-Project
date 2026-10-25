@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-ar25-s2-5fedde758833",
+ "algo": "ppo",
+ "game": "ar25",
+ "seed": 2,
+ "steps": 1484,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1057,
+  "new_state_rate": 0.7122641509433962,
+  "mean_bonus_factor": 0.8996610754982243,
+  "std_bonus_factor": 0.16461093809098107
+ },
+ "masked_online": {
+  "unique_states": 1057,
+  "new_state_rate": 0.7122641509433962,
+  "mean_bonus_factor": 0.8996610754982243,
+  "std_bonus_factor": 0.16461093809098107
+ },
+ "masked_final": {
+  "unique_states": 1057,
+  "new_state_rate": 0.7122641509433962,
+  "mean_bonus_factor": 0.8996610754982243,
+  "std_bonus_factor": 0.16461093809098107
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

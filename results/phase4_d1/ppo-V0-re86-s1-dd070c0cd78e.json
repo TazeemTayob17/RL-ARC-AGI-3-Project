@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-re86-s1-dd070c0cd78e",
+ "algo": "ppo",
+ "game": "re86",
+ "seed": 1,
+ "steps": 1486,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1454,
+  "new_state_rate": 0.9784656796769852,
+  "mean_bonus_factor": 0.9923846483903488,
+  "std_bonus_factor": 0.052718684179286456
+ },
+ "masked_online": {
+  "unique_states": 1454,
+  "new_state_rate": 0.9784656796769852,
+  "mean_bonus_factor": 0.9923846483903488,
+  "std_bonus_factor": 0.052718684179286456
+ },
+ "masked_final": {
+  "unique_states": 1454,
+  "new_state_rate": 0.9784656796769852,
+  "mean_bonus_factor": 0.9923846483903488,
+  "std_bonus_factor": 0.052718684179286456
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

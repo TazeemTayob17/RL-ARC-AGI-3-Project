@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-ft09-s1-057bc817122d",
+ "algo": "dqn",
+ "game": "ft09",
+ "seed": 1,
+ "steps": 1490,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 81,
+  "new_state_rate": 0.05436241610738255,
+  "mean_bonus_factor": 0.2893335341333709,
+  "std_bonus_factor": 0.23201196251751235
+ },
+ "masked_online": {
+  "unique_states": 81,
+  "new_state_rate": 0.05436241610738255,
+  "mean_bonus_factor": 0.2893335341333709,
+  "std_bonus_factor": 0.23201196251751235
+ },
+ "masked_final": {
+  "unique_states": 81,
+  "new_state_rate": 0.05436241610738255,
+  "mean_bonus_factor": 0.2893335341333709,
+  "std_bonus_factor": 0.23201196251751235
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

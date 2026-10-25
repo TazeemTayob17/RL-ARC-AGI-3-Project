@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-ar25-s0-3071623b152a",
+ "algo": "dqn",
+ "game": "ar25",
+ "seed": 0,
+ "steps": 1494,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 406,
+  "new_state_rate": 0.2717536813922356,
+  "mean_bonus_factor": 0.5194760034092962,
+  "std_bonus_factor": 0.34139812258877367
+ },
+ "masked_online": {
+  "unique_states": 406,
+  "new_state_rate": 0.2717536813922356,
+  "mean_bonus_factor": 0.5194760034092962,
+  "std_bonus_factor": 0.34139812258877367
+ },
+ "masked_final": {
+  "unique_states": 406,
+  "new_state_rate": 0.2717536813922356,
+  "mean_bonus_factor": 0.5194760034092962,
+  "std_bonus_factor": 0.34139812258877367
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

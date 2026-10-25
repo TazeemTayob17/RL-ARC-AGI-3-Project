@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-sc25-s2-4b390dc5a4c0",
+ "algo": "ppo",
+ "game": "sc25",
+ "seed": 2,
+ "steps": 1480,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 789,
+  "new_state_rate": 0.5331081081081082,
+  "mean_bonus_factor": 0.8114262378401801,
+  "std_bonus_factor": 0.21998496770736536
+ },
+ "masked_online": {
+  "unique_states": 789,
+  "new_state_rate": 0.5331081081081082,
+  "mean_bonus_factor": 0.8114262378401801,
+  "std_bonus_factor": 0.21998496770736536
+ },
+ "masked_final": {
+  "unique_states": 789,
+  "new_state_rate": 0.5331081081081082,
+  "mean_bonus_factor": 0.8114262378401801,
+  "std_bonus_factor": 0.21998496770736536
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

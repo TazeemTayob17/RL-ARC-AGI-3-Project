@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-ls20-s2-6cc8425d1799",
+ "algo": "dqn",
+ "game": "ls20",
+ "seed": 2,
+ "steps": 1490,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 833,
+  "new_state_rate": 0.5590604026845638,
+  "mean_bonus_factor": 0.8194364887015901,
+  "std_bonus_factor": 0.22230659273521355
+ },
+ "masked_online": {
+  "unique_states": 833,
+  "new_state_rate": 0.5590604026845638,
+  "mean_bonus_factor": 0.8194364887015901,
+  "std_bonus_factor": 0.22230659273521355
+ },
+ "masked_final": {
+  "unique_states": 833,
+  "new_state_rate": 0.5590604026845638,
+  "mean_bonus_factor": 0.8194364887015901,
+  "std_bonus_factor": 0.22230659273521355
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-g50t-s0-500e773958f2",
+ "algo": "dqn",
+ "game": "g50t",
+ "seed": 0,
+ "steps": 1489,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 592,
+  "new_state_rate": 0.39758226997985224,
+  "mean_bonus_factor": 0.7501697351380225,
+  "std_bonus_factor": 0.2266899494833566
+ },
+ "masked_online": {
+  "unique_states": 592,
+  "new_state_rate": 0.39758226997985224,
+  "mean_bonus_factor": 0.7501697351380225,
+  "std_bonus_factor": 0.2266899494833566
+ },
+ "masked_final": {
+  "unique_states": 592,
+  "new_state_rate": 0.39758226997985224,
+  "mean_bonus_factor": 0.7501697351380225,
+  "std_bonus_factor": 0.2266899494833566
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

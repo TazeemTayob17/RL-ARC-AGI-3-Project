@@ -1,0 +1,28 @@
+{
+ "run": "ppo-V0-vc33-s2-8b5dd1a43f74",
+ "algo": "ppo",
+ "game": "vc33",
+ "seed": 2,
+ "steps": 1471,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 141,
+  "new_state_rate": 0.09585316111488783,
+  "mean_bonus_factor": 0.4064039567087521,
+  "std_bonus_factor": 0.24306432536505526
+ },
+ "masked_online": {
+  "unique_states": 141,
+  "new_state_rate": 0.09585316111488783,
+  "mean_bonus_factor": 0.4064039567087521,
+  "std_bonus_factor": 0.24306432536505526
+ },
+ "masked_final": {
+  "unique_states": 141,
+  "new_state_rate": 0.09585316111488783,
+  "mean_bonus_factor": 0.4064039567087521,
+  "std_bonus_factor": 0.24306432536505526
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

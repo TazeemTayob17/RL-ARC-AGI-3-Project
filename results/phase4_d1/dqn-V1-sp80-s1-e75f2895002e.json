@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-sp80-s1-e75f2895002e",
+ "algo": "dqn",
+ "game": "sp80",
+ "seed": 1,
+ "steps": 1452,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 349,
+  "new_state_rate": 0.2403581267217631,
+  "mean_bonus_factor": 0.5988490073677091,
+  "std_bonus_factor": 0.25587800081349277
+ },
+ "masked_online": {
+  "unique_states": 349,
+  "new_state_rate": 0.2403581267217631,
+  "mean_bonus_factor": 0.5988490073677091,
+  "std_bonus_factor": 0.25587800081349277
+ },
+ "masked_final": {
+  "unique_states": 349,
+  "new_state_rate": 0.2403581267217631,
+  "mean_bonus_factor": 0.5988490073677091,
+  "std_bonus_factor": 0.25587800081349277
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

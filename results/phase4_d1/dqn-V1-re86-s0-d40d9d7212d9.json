@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-re86-s0-d40d9d7212d9",
+ "algo": "dqn",
+ "game": "re86",
+ "seed": 0,
+ "steps": 1486,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1129,
+  "new_state_rate": 0.7597577388963661,
+  "mean_bonus_factor": 0.9229566543058361,
+  "std_bonus_factor": 0.1408458338515978
+ },
+ "masked_online": {
+  "unique_states": 1129,
+  "new_state_rate": 0.7597577388963661,
+  "mean_bonus_factor": 0.9229566543058361,
+  "std_bonus_factor": 0.1408458338515978
+ },
+ "masked_final": {
+  "unique_states": 1129,
+  "new_state_rate": 0.7597577388963661,
+  "mean_bonus_factor": 0.9229566543058361,
+  "std_bonus_factor": 0.1408458338515978
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

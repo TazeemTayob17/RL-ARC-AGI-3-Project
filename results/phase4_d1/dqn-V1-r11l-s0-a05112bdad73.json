@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-r11l-s0-a05112bdad73",
+ "algo": "dqn",
+ "game": "r11l",
+ "seed": 0,
+ "steps": 1474,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 1168,
+  "new_state_rate": 0.7924016282225237,
+  "mean_bonus_factor": 0.8913638191523048,
+  "std_bonus_factor": 0.22502391993899695
+ },
+ "masked_online": {
+  "unique_states": 1168,
+  "new_state_rate": 0.7924016282225237,
+  "mean_bonus_factor": 0.8913638191523048,
+  "std_bonus_factor": 0.22502391993899695
+ },
+ "masked_final": {
+  "unique_states": 1168,
+  "new_state_rate": 0.7924016282225237,
+  "mean_bonus_factor": 0.8913638191523048,
+  "std_bonus_factor": 0.22502391993899695
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}

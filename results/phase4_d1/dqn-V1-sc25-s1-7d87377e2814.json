@@ -1,0 +1,28 @@
+{
+ "run": "dqn-V1-sc25-s1-7d87377e2814",
+ "algo": "dqn",
+ "game": "sc25",
+ "seed": 1,
+ "steps": 1476,
+ "replay_faithful": true,
+ "full": {
+  "unique_states": 581,
+  "new_state_rate": 0.39363143631436315,
+  "mean_bonus_factor": 0.7259879887006779,
+  "std_bonus_factor": 0.24825116088954907
+ },
+ "masked_online": {
+  "unique_states": 581,
+  "new_state_rate": 0.39363143631436315,
+  "mean_bonus_factor": 0.7259879887006779,
+  "std_bonus_factor": 0.24825116088954907
+ },
+ "masked_final": {
+  "unique_states": 581,
+  "new_state_rate": 0.39363143631436315,
+  "mean_bonus_factor": 0.7259879887006779,
+  "std_bonus_factor": 0.24825116088954907
+ },
+ "mask_pixels": 0,
+ "mask_bbox": null
+}
