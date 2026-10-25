@@ -9,16 +9,18 @@ from typing import Optional
 import numpy as np
 import torch
 
-from ..adapter import N_SIMPLE, SIMPLE_IDS, Observation, Transition, action_to_index, index_to_action
+from ..adapter import N_SIMPLE, OPTION_ACT, SIMPLE_IDS, Observation, Transition, action_to_index, index_to_action
 from ..intrinsic import NoveltyCounter, option_bonus
 from ..objects import EffectMemory, build_view
 from .action_bank import ActionKey
-from .object_actions import build_action_set
+from .object_actions import OPTION_KEY, build_action_set
 from .agent import DQNAgent
 from .exploration import SELECTOR, StructuredExplorer
 from .prior import load_prior, state_outputs
 
 ROOT = Path(__file__).resolve().parents[2]
+
+OPTION_EXPLORE_PROB = 0.25      # I4: share of epsilon-exploration draws that take the frontier option when it is legal (fixed, not tuned)
 
 SYSTEM = {
     "id": "dqn_v1_selected",
@@ -41,6 +43,8 @@ def _available(mask: np.ndarray) -> list[int]:
 
 
 def _to_index(a: ActionKey) -> int:
+    if a == OPTION_KEY:
+        return OPTION_ACT
     return action_to_index(int(a.action_id), (int(a.x), int(a.y)) if int(a.action_id) == 6 else None)
 
 
@@ -88,6 +92,8 @@ class DQNV1:
         self._feat_cache = None
         self._set_cache = None
         self.memory.reset(self.seed)
+        self.option_rng = random.Random(f"dqn-frontier-{self.seed}")     # touched only when the option is legal
+        self.n_option_explore = 0
         self.last_label = None
         self.since_progress = 0
 
@@ -111,11 +117,11 @@ class DQNV1:
     def _action_set(self, obs: Observation, available):
         """Choice set of an observation. The outcome of one step is the input of the next, so the last set is kept:
         the set the learner trains on is the set it acted on."""
-        key = (obs.frame.tobytes(), obs.progress, obs.mask.tobytes(), self.memory.n_recorded)   # memory changed -> rebuild
+        key = (obs.frame.tobytes(), obs.progress, obs.mask.tobytes(), self.memory.n_recorded, obs.option_ok)   # memory changed -> rebuild
         if self._set_cache is not None and self._set_cache[0] == key:
             return self._set_cache[1]
         view = build_view(obs.frame, obs.progress, self.memory) if 6 in available else None
-        oset = build_action_set(self.agent.bank, available, view, self.memory)
+        oset = build_action_set(self.agent.bank, available, view, self.memory, obs.option_ok)
         self._set_cache = (key, oset)
         return oset
 
@@ -125,10 +131,14 @@ class DQNV1:
         oset = self._action_set(obs, available) if self.objects_on else None
 
         def explore_fn(rng, action_index):
+            if obs.option_ok and self.option_rng.random() < OPTION_EXPLORE_PROB:      # I4: the option is part of exploration too
+                self.n_option_explore += 1
+                return OPTION_KEY, "option"
             return self.explorer.choose(rng, available, obs.frame, simple, simple_logits, a6_logits, oset)
 
-        action, label = self.agent.act(state, available, explore_fn=explore_fn, cand_set=oset)
-        self.explorer.observe(obs.frame, action)  # counts greedy actions too, matching the selected experiment
+        action, label = self.agent.act(state, available, explore_fn=explore_fn, cand_set=oset, option_ok=obs.option_ok)
+        if action != OPTION_KEY:
+            self.explorer.observe(obs.frame, action)  # counts greedy actions too, matching the selected experiment
         idx = _to_index(action)
         self.pending = (state, tuple(available), action, idx, oset)
         self.last_label = label
@@ -161,7 +171,8 @@ class DQNV1:
         self.agent.observe(state, available, action, reward + bonus, next_state, next_available, bool(t.terminal),
                            steps=int(t.info.get("k", 1)),
                            **({} if oset is None else {"cand": oset.rows, "chosen": oset.row_of(action),
-                                                       "next_cand": None if next_set is None else next_set.rows}))
+                                                       "next_cand": None if next_set is None else next_set.rows}),
+                           **({"next_opt": t.next_obs.option_ok} if oset is None and t.next_obs.option_ok else {}))
         if reward > 0 or t.info.get("state") == "WIN":
             self.since_progress = 0
         else:
@@ -191,6 +202,7 @@ class DQNV1:
             "intrinsic": self.novelty.summary(),
             "object_clicks": self.objects_on,
             "effect_memory": self.memory.summary() if self.objects_on else None,
+            "option_explore_draws": self.n_option_explore,
             **self.agent.summary(),
         }
 

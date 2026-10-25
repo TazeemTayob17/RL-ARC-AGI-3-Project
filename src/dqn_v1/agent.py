@@ -13,6 +13,7 @@ from torch import nn
 from ..objects import FEAT_DIM
 from .action_bank import ActionBank, ActionKey
 from .qnet import ActionValueNetwork, QNetConfig, c51_project
+from .object_actions import OPTION_KEY       # I4: "go to frontier" (src/frontier.py); not an environment action
 from .replay import NStepAccumulator, ReplayBuffer, StepTransition
 
 
@@ -97,8 +98,15 @@ class DQNAgent:
     def _to(self, x: np.ndarray) -> torch.Tensor:
         return torch.as_tensor(x, dtype=torch.float32, device=self.device)
 
-    def q_values(self, state: np.ndarray, available: list[int] | tuple[int, ...], target: bool = False):
+    def _with_option(self, keys, acts):
+        """Fixed-bank rows plus the all-zero row that stands for the frontier option (I4 without object rows)."""
+        return list(keys) + [OPTION_KEY], np.concatenate([acts, np.zeros((1, acts.shape[1]), dtype=np.float32)], axis=0)
+
+    def q_values(self, state: np.ndarray, available: list[int] | tuple[int, ...], target: bool = False,
+                 option_ok: bool = False):
         keys, acts = self.bank.encode_candidates(available)
+        if option_ok:
+            keys, acts = self._with_option(keys, acts)
         if not keys:
             return keys, torch.empty(0, device=self.device)
         net = self.target if target else self.online
@@ -113,8 +121,10 @@ class DQNAgent:
             return ActionKey(int(aid), rng.randrange(self.bank.click_size), rng.randrange(self.bank.click_size))
         return ActionKey(int(aid))
 
-    def act(self, state: np.ndarray, available: list[int], explore_fn=None, cand_set=None) -> tuple[ActionKey, str]:
-        """`cand_set` (I3) is the per-state choice set (keys + feature rows); without it the fixed action bank is used."""
+    def act(self, state: np.ndarray, available: list[int], explore_fn=None, cand_set=None,
+            option_ok: bool = False) -> tuple[ActionKey, str]:
+        """`cand_set` (I3) is the per-state choice set (keys + feature rows); without it the fixed action bank is used.
+        `option_ok` (I4): the frontier option is a legal choice (already a row of `cand_set` when there is one)."""
         t0 = time.perf_counter()
         if not available:
             raise ValueError("No legal actions")
@@ -126,7 +136,7 @@ class DQNAgent:
                 a, label = explore_fn(self.explore_rng, self.action_count)
                 if not isinstance(a, ActionKey):
                     raise TypeError(f"explore_fn must return ActionKey, got {type(a)!r}")
-                if int(a.action_id) not in {int(x) for x in available}:
+                if not (a == OPTION_KEY and option_ok) and int(a.action_id) not in {int(x) for x in available}:
                     raise AssertionError(("illegal_exploration_action", a, available, label))
             self.stats.epsilon_actions += 1
             if label == "d14":
@@ -137,7 +147,7 @@ class DQNAgent:
                 self.stats.epsilon_uniform_actions += 1
         else:
             if cand_set is None:
-                keys, q = self.q_values(state, available, target=False)
+                keys, q = self.q_values(state, available, target=False, option_ok=option_ok)
             else:
                 keys = cand_set.keys
                 with torch.no_grad():
@@ -162,11 +172,12 @@ class DQNAgent:
         cand: np.ndarray | None = None,
         chosen: int = -1,
         next_cand: np.ndarray | None = None,
+        next_opt: bool = False,
     ) -> None:
         step = StepTransition(
             state=np.asarray(state, dtype=np.float32).copy(),
             available=tuple(int(x) for x in current_available),
-            action=self.bank.encode(action),
+            action=np.zeros(self.bank.action_dim, dtype=np.float32) if action == OPTION_KEY else self.bank.encode(action),
             action_key=(int(action.action_id), int(action.x), int(action.y)),
             reward=float(reward),
             next_state=np.asarray(next_state, dtype=np.float32).copy(),
@@ -176,6 +187,7 @@ class DQNAgent:
             cand=cand,
             chosen=int(chosen),
             next_cand=next_cand,
+            next_opt=bool(next_opt),
         )
         for t in self.nstep.append(step):
             self.replay.add(t)
@@ -206,6 +218,8 @@ class DQNAgent:
     def _current_scalar_q(self, t) -> torch.Tensor:
         if t.cand is not None:
             return self.online.q_values(self._to(t.state), self._to(t.cand))[t.chosen]
+        if t.action_key[0] == OPTION_KEY.action_id:                # I4: the all-zero option row, scored alone
+            return self.online.q_values(self._to(t.state), self._to(np.zeros((1, self.bank.action_dim), dtype=np.float32)))[0]
         keys, acts_np = self.bank.encode_candidates(t.available)
         if not keys:
             raise ValueError("Replay transition has no current legal actions")
@@ -223,6 +237,8 @@ class DQNAgent:
         if t.terminal or not t.next_available:
             return torch.tensor(0.0, device=self.device)
         acts_np = t.next_cand if t.cand is not None else self.bank.encode_candidates(t.next_available)[1]
+        if t.next_opt and t.cand is None:
+            acts_np = self._with_option(self.bank.encode_candidates(t.next_available)[0], acts_np)[1]
         acts = self._to(acts_np)
         state = self._to(t.next_state)
         with torch.no_grad():

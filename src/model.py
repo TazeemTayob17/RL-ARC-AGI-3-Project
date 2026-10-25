@@ -137,7 +137,7 @@ class ActorCritic(nn.Module):
     def __init__(self, arch: dict):
         super().__init__()
         self.rep = build_representation(arch)
-        self.type_head = nn.Linear(self.rep.out_dim, N_TYPES)
+        self.type_head = nn.Linear(self.rep.out_dim, N_TYPES + int(arch.get("extra_types", 0)))   # I4: +1 = frontier option
         self.click = ClickHead(self.rep.spatial_channels, self.rep.out_dim)
         self.value = nn.Linear(self.rep.out_dim, 1)
 

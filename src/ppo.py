@@ -15,7 +15,7 @@ import torch
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
-from .adapter import N_SIMPLE, CLICK_TYPE, Observation, Transition, type_mask
+from .adapter import N_SIMPLE, N_TYPES, CLICK_TYPE, OPTION_ACT, Observation, Transition, type_mask
 from .intrinsic import NoveltyCounter, option_bonus
 from .model import ActorCritic, ObsBatch, collate, model_info
 from .objects import K_MAX, EffectMemory, build_view
@@ -23,17 +23,28 @@ from .objects import K_MAX, EffectMemory, build_view
 NEG = -1e9
 
 
-def evaluate_actions(net: ActorCritic, b: ObsBatch, actions: torch.Tensor):
+def _type_terms(b: ObsBatch, actions: torch.Tensor, opt_ok):
+    """Type mask, click flags and action types. With `opt_ok` (I4) the frontier option is a further action type."""
+    tm = torch.cat([b.mask[:, :N_SIMPLE], b.mask[:, N_SIMPLE:].any(1, keepdim=True)], 1)
+    if opt_ok is None:
+        is_click = actions >= N_SIMPLE
+        return tm, is_click, torch.where(is_click, torch.full_like(actions, CLICK_TYPE), actions)
+    tm = torch.cat([tm, opt_ok[:, None]], 1)
+    is_opt = actions == OPTION_ACT
+    is_click = (actions >= N_SIMPLE) & ~is_opt
+    typ = torch.where(is_click, torch.full_like(actions, CLICK_TYPE), actions)
+    return tm, is_click, torch.where(is_opt, torch.full_like(actions, N_TYPES), typ)
+
+
+def evaluate_actions(net: ActorCritic, b: ObsBatch, actions: torch.Tensor, opt_ok=None):
     """Joint log-prob, entropy and value for stored actions under the current policy (shared by act and update)."""
     tl, cl, v = net(b)
-    tm = torch.cat([b.mask[:, :N_SIMPLE], b.mask[:, N_SIMPLE:].any(1, keepdim=True)], 1)
+    tm, is_click, typ = _type_terms(b, actions, opt_ok)
     lp_t = F.log_softmax(tl.masked_fill(~tm, NEG), 1)
     p_t = lp_t.exp()
     lp_c = F.log_softmax(cl.masked_fill(~b.mask[:, N_SIMPLE:], NEG), 1)
     p_c = lp_c.exp()
-    is_click = actions >= N_SIMPLE
-    typ = torch.where(is_click, torch.full_like(actions, CLICK_TYPE), actions)
-    loc = (actions - N_SIMPLE).clamp(min=0)
+    loc = (actions - N_SIMPLE).clamp(min=0, max=4095)
     logp = lp_t.gather(1, typ[:, None]).squeeze(1)
     logp = logp + torch.where(is_click, lp_c.gather(1, loc[:, None]).squeeze(1), torch.zeros_like(logp))
     ent = -(p_t * lp_t).sum(1) + p_t[:, CLICK_TYPE] * -(p_c * lp_c).sum(1)
@@ -50,17 +61,15 @@ def object_logits(cl: torch.Tensor, obj_index: torch.Tensor) -> torch.Tensor:
 
 
 def evaluate_object_actions(net: ActorCritic, b: ObsBatch, actions: torch.Tensor, slots: torch.Tensor,
-                            obj_index: torch.Tensor, valid: torch.Tensor):
+                            obj_index: torch.Tensor, valid: torch.Tensor, opt_ok=None):
     """Like evaluate_actions, with the click location replaced by the choice among objects. `valid` [B, K_MAX + 1]
     is the choice set stored at collection time (memory-dropped candidates are False), so log-probs stay consistent."""
     tl, cl, v = net(b)
-    tm = torch.cat([b.mask[:, :N_SIMPLE], b.mask[:, N_SIMPLE:].any(1, keepdim=True)], 1)
+    tm, is_click, typ = _type_terms(b, actions, opt_ok)
     lp_t = F.log_softmax(tl.masked_fill(~tm, NEG), 1)
     p_t = lp_t.exp()
     lp_s = F.log_softmax(object_logits(cl, obj_index).masked_fill(~valid, NEG), 1)
     p_s = lp_s.exp()
-    is_click = actions >= N_SIMPLE
-    typ = torch.where(is_click, torch.full_like(actions, CLICK_TYPE), actions)
     logp = lp_t.gather(1, typ[:, None]).squeeze(1)
     logp = logp + torch.where(is_click, lp_s.gather(1, slots[:, None]).squeeze(1), torch.zeros_like(logp))
     ent = -(p_t * lp_t).sum(1) + p_t[:, CLICK_TYPE] * -(p_s * lp_s).sum(1)
@@ -74,10 +83,11 @@ class PPO:
         self.arch, self.p, self.updates_disabled = arch, params, updates_disabled
         self.objects_on = bool(params.get("object_clicks", False))              # I3: click objects, not pixels
         self.memory = EffectMemory(bool(params.get("effect_memory", True)) and self.objects_on)
+        self.option_on = params.get("frontier_mode") == "learned"                  # I4: frontier option as an action type
 
     def start_run(self, seed: int) -> None:
         torch.manual_seed(seed)
-        self.net = ActorCritic(self.arch)
+        self.net = ActorCritic({**self.arch, "extra_types": 1} if self.option_on else self.arch)
         self.opt = torch.optim.Adam(self.net.parameters(), lr=self.p["lr"], eps=1e-5)
         self.buf: list = []
         self.novelty = NoveltyCounter(float(self.p.get("intrinsic_beta", 0.0)))
@@ -85,7 +95,7 @@ class PPO:
         self.n_act = self.rollout_updates = self.grad_steps = self.partial_rollouts = 0
         self.ema: dict = {}
         self.memory.reset(seed)
-        self.n_cand = self.n_kept = self.n_click_acts = 0
+        self.n_cand = self.n_kept = self.n_click_acts = self.n_option_picks = 0
 
     # ---------------------------------------------------------------- acting
     def act(self, obs: Observation) -> int:
@@ -93,6 +103,8 @@ class PPO:
         with torch.no_grad():
             tl, cl, v = self.net(collate([obs]))
             tm = torch.from_numpy(type_mask(obs.mask))
+            if self.option_on:
+                tm = torch.cat([tm, torch.tensor([bool(obs.option_ok)])])
             lp_t = F.log_softmax(tl[0].masked_fill(~tm, NEG), 0)
             typ = int(Categorical(logits=lp_t).sample())
             extra = None
@@ -106,6 +118,9 @@ class PPO:
                 extra = [obj_index, valid, 0, view]
             if typ < N_SIMPLE:
                 idx, lp = typ, lp_t[typ]
+            elif typ == N_TYPES:                                    # I4: the frontier option (needs option_on)
+                idx, lp = OPTION_ACT, lp_t[typ]
+                self.n_option_picks += 1
             elif self.objects_on:
                 lp_s = F.log_softmax(object_logits(cl, torch.from_numpy(extra[0])[None])[0]
                                      .masked_fill(~torch.from_numpy(extra[1]), NEG), 0)
@@ -127,12 +142,12 @@ class PPO:
     def observe(self, t: Transition) -> None:
         obs, idx, lp, v, extra = self._pending
         assert t.action == idx, "observe() must follow the matching act()"
-        if extra is not None and idx >= N_SIMPLE and extra[2] < K_MAX:
+        if extra is not None and N_SIMPLE <= idx < OPTION_ACT and extra[2] < K_MAX:
             c = extra[3].cands[extra[2]]
             self.memory.record(extra[3].skey, c, bool(t.info.get("frame_changed")), level_up=t.reward > 0,
                                game_over=bool(t.terminal and t.info.get("state") == "GAME_OVER"))
         self.buf.append((obs, idx, lp, v, t.reward, t.terminal, option_bonus(self.novelty, t, self.p["gamma"]),
-                         int(t.info.get("k", 1)), extra))           # I1 bonus kept apart; k = primitive steps (option)
+                         int(t.info.get("k", 1)), extra, bool(obs.option_ok)))   # I1 bonus kept apart; k = primitive steps (option)
         if len(self.buf) >= self.p["rollout"]:
             self._end_rollout(0.0 if t.terminal else self._value(t.next_obs))
 
@@ -164,6 +179,7 @@ class PPO:
         rewards = np.array([b[4] + b[6] for b in buf], dtype=np.float32)   # extrinsic + I1 bonus (0 when beta = 0)
         dones = np.array([b[5] for b in buf], dtype=np.float32)
         ks = np.array([b[7] for b in buf])
+        oo = torch.tensor([b[9] for b in buf], dtype=torch.bool) if self.option_on else None
         if self.objects_on:
             oi = torch.from_numpy(np.stack([b[8][0] for b in buf]))
             ov = torch.from_numpy(np.stack([b[8][1] for b in buf]))
@@ -180,9 +196,10 @@ class PPO:
                 ci = chunk.tolist()
                 if self.objects_on:
                     logp, ent, v = evaluate_object_actions(self.net, collate([obs[i] for i in ci]), actions[chunk],
-                                                           os_[chunk], oi[chunk], ov[chunk])
+                                                           os_[chunk], oi[chunk], ov[chunk], None if oo is None else oo[chunk])
                 else:
-                    logp, ent, v = evaluate_actions(self.net, collate([obs[i] for i in ci]), actions[chunk])
+                    logp, ent, v = evaluate_actions(self.net, collate([obs[i] for i in ci]), actions[chunk],
+                                                    None if oo is None else oo[chunk])
                 a = adv[chunk]
                 if len(ci) > 1:
                     a = (a - a.mean()) / (a.std() + 1e-8)
@@ -211,6 +228,7 @@ class PPO:
                 "updates_disabled": self.updates_disabled, "intrinsic": self.novelty.summary(),
                 "object_clicks": self.objects_on,
                 "effect_memory": self.memory.summary() if self.objects_on else None,
+                "frontier_option": self.option_on, "option_type_picks": self.n_option_picks,
                 "mean_candidates": self.n_cand / max(self.n_click_acts, 1),
                 "mean_kept": self.n_kept / max(self.n_click_acts, 1),
                 **{f"{k}_ema": v for k, v in self.ema.items()}}

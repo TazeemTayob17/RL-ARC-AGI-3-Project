@@ -13,6 +13,8 @@ import numpy as np
 from ..objects import FEAT_DIM, GRID, EffectMemory, ObjectView, features
 from .action_bank import ActionBank, ActionKey
 
+OPTION_KEY = ActionKey(0)        # I4: the frontier option (src/frontier.py); its row is all zeros
+
 CLICK_ID = 6
 
 
@@ -29,8 +31,10 @@ class ObjectActionSet:
         return self.index[(int(a.action_id), int(a.x), int(a.y))]
 
 
-def build_action_set(bank: ActionBank, available, view: ObjectView | None, memory: EffectMemory) -> ObjectActionSet:
-    """Rows for every simple action in `available`, then (if ACTION6 is legal) the kept objects and the slot."""
+def build_action_set(bank: ActionBank, available, view: ObjectView | None, memory: EffectMemory,
+                     option_ok: bool = False) -> ObjectActionSet:
+    """Rows for every simple action in `available`, then (if ACTION6 is legal) the kept objects and the slot, then (I4,
+    when the frontier option is legal) one all-zero row for the option."""
     simple = [a for a in available if int(a) != CLICK_ID]
     keys, simple_rows = bank.encode_candidates(simple)
     keys = list(keys)
@@ -49,6 +53,9 @@ def build_action_set(bank: ActionBank, available, view: ObjectView | None, memor
         extra.append(np.concatenate([bank.encode(key), np.zeros(FEAT_DIM, dtype=np.float32)]))
         click_rows.append(len(keys)); keys.append(key); cands.append(None)
         rows.append(np.stack(extra).astype(np.float32))
+    if option_ok:
+        keys.append(OPTION_KEY); cands.append(None)
+        rows.append(np.zeros((1, bank.action_dim + FEAT_DIM), dtype=np.float32))
     arr = np.concatenate(rows, axis=0).astype(np.float32)
     index = {}
     for i, k in enumerate(keys):

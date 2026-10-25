@@ -1,0 +1,341 @@
+{
+ "identity": {
+  "schema_version": 1,
+  "run_id": "dqn-V1-su15-s1-d8908153aed3",
+  "stage": "V4",
+  "config_hash": "d8908153aed3",
+  "config": {
+   "algo": "dqn",
+   "game": "su15",
+   "version": "V1",
+   "seed": 1,
+   "env_seed": 0,
+   "budget": 1500,
+   "arch": {
+    "id": "onehotcnn_stack2",
+    "channels": 32,
+    "context_dim": 128
+   },
+   "params": {
+    "gamma": 0.99,
+    "learning_rate": 0.0001,
+    "batch_size": 8,
+    "replay_capacity": 4096,
+    "warmup_actions": 16,
+    "train_every_actions": 8,
+    "target_update_actions": 80,
+    "gradient_clip_norm": 10.0,
+    "hidden_dim": 128,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.1,
+    "epsilon_decay_actions": 400,
+    "per_alpha": 0.6,
+    "per_beta_start": 0.4,
+    "per_beta_end": 1.0,
+    "per_eps": 0.0001,
+    "c51_atoms": 51,
+    "c51_vmin": 0.0,
+    "c51_vmax": 5.0,
+    "frontier_mode": "learned",
+    "stage": "V4",
+    "object_clicks": true,
+    "effect_memory": true,
+    "intrinsic_beta": 0.01
+   },
+   "updates_disabled": false,
+   "regime": "research",
+   "threads": 1,
+   "tag": "phase5c-v4"
+  },
+  "architecture_id": "selected_onehot_stack2_vector_effect+dueling_action_value",
+  "observation_contract": {
+   "frame": "int8[64,64]",
+   "history": "previous step's last frame",
+   "extras": "prev_action, progress, high_water, mask"
+  },
+  "action_representation": "shared 10-D action vector over the legal action set",
+  "auxiliary_objectives": [
+   "frozen binary action-effect prior"
+  ],
+  "memory": "downsample16 state-action counts inside structured epsilon exploration",
+  "budget_accounting": "scorer-rule actions (steps + non-first resets)",
+  "split_hash": "8819bd3b28d9",
+  "code_commit": "58620e40720dd92741392172b29994e53ee35b41+dirty",
+  "packages": {
+   "arc-agi": "0.9.9",
+   "arcengine": "0.9.3",
+   "numpy": "2.5.3",
+   "torch": "2.14.0"
+  },
+  "model_info": {
+   "architecture": "selected_onehot_stack2_vector_effect+dueling_action_value",
+   "parameters": 77186,
+   "frozen_prior_parameters": 184897,
+   "action_representation": "shared 10-D action vector over the legal action set",
+   "auxiliary_objectives": [
+    "frozen binary action-effect prior"
+   ],
+   "memory": "downsample16 state-action counts inside structured epsilon exploration",
+   "checkpoint_mode": "public cross-fold, seed-11 prior (faithful final-ablation reproduction)"
+  }
+ },
+ "status": "budget",
+ "error": null,
+ "counters": {
+  "budget": 1500,
+  "scorer_actions": 1500,
+  "env_commands": 1501,
+  "resets": 37,
+  "episodes": 37,
+  "high_water": 0,
+  "sdk_total_actions": 1500
+ },
+ "official_score": {
+  "source": "arc_agi SDK local scorecard (NORMAL mode)",
+  "score": 0.0,
+  "levels_completed": 0,
+  "arc_agi_version": "0.9.9"
+ },
+ "diagnostics": {
+  "steps": 1464,
+  "action_type_counts": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   202,
+   1262
+  ],
+  "click_fraction": 0.8620218579234973,
+  "frame_change_rate": 0.8019125683060109,
+  "unique_state_rate": 0.20765027322404372,
+  "unique_states": 304,
+  "repeated_state_transitions": 1160,
+  "rewarded_transitions": 0,
+  "first_reward_action": null,
+  "progress_curve": [
+   [
+    0,
+    0
+   ]
+  ],
+  "game_overs": 36,
+  "wins": 0
+ },
+ "learner": {
+  "algo": "dqn",
+  "version": "V1",
+  "selected_system": "dqn_v1_selected",
+  "fold": 2,
+  "prior_checkpoint": "assets\\dqn_v1\\checkpoints\\E-onehotcnn__T-stack2__A-vector__U-effect__f2__s11.pt",
+  "selector": "D14_split_effect_count",
+  "deployment_checkpoint": false,
+  "intrinsic": {
+   "beta": 0.01,
+   "calls": 1464,
+   "nonzero": 1344,
+   "loop_zeroed": 120,
+   "total_bonus": 8.066578840609607,
+   "mean_bonus": 0.006001918780215481,
+   "unique_states": 304
+  },
+  "object_clicks": true,
+  "effect_memory": {
+   "enabled": true,
+   "recorded": 460,
+   "candidates_offered": 53629,
+   "dropped_as_dead": 76,
+   "dropped_share": 0.001417143709560126,
+   "retried": 6,
+   "all_dead_fallbacks": 0,
+   "pos_signatures": 33,
+   "shape_signatures": 11,
+   "exact_entries": 457
+  },
+  "option_explore_draws": 76,
+  "updates": 182,
+  "gradient_steps": 182,
+  "mean_loss": 0.00015801659740091154,
+  "mean_abs_td": 0.00931064580831994,
+  "mean_q": 0.07993858350456211,
+  "mean_grad_norm": 0.009768655365345755,
+  "train_seconds": 13.575531999995292,
+  "act_seconds": 3.0894693998416187,
+  "epsilon_action_fraction": 0.23155737704918034,
+  "greedy_action_fraction": 0.7684426229508197,
+  "epsilon_uniform_fraction": 0.22418879056047197,
+  "epsilon_typeprior_fraction": 0.0,
+  "epsilon_structured_fraction": 0.775811209439528,
+  "epsilon_uniform_actions": 76,
+  "epsilon_typeprior_actions": 0,
+  "epsilon_structured_actions": 263,
+  "replay_size": 1464,
+  "parameter_delta_l2": 0.6663197719895115,
+  "frontier": {
+   "mode": "learned",
+   "gamma": 0.99,
+   "max_path": 40,
+   "decisions": 1464,
+   "decisions_with_option": 1464,
+   "option_offer_rate": 1.0,
+   "options_started": 807,
+   "option_choice_rate": 0.5512295081967213,
+   "option_steps": 807,
+   "primitive_steps": 1464,
+   "mean_option_length": 1.0,
+   "walks_started": 0,
+   "walks_completed_as_expected": 0,
+   "path_success_rate": 0.0,
+   "new_states_in_options": 167,
+   "new_states_outside_options": 123,
+   "new_states_per_100_option_steps": 20.69392812887237,
+   "new_states_per_100_other_steps": 18.72146118721461,
+   "graph_nodes": 291,
+   "graph_edges": 1312,
+   "nodes_with_untried": 291,
+   "length_histogram": {
+    "1": 807
+   },
+   "stop_reasons": {
+    "done": 785,
+    "deviation": 0,
+    "level_up": 0,
+    "terminal": 22,
+    "budget": 0,
+    "illegal": 0
+   }
+  }
+ },
+ "runtime_guard": {
+  "checked_events": 1744,
+  "violations": []
+ },
+ "cost": {
+  "wall_s": 73.3,
+  "env_s": 8.28,
+  "act_s": 5.03,
+  "observe_update_s": 58.69,
+  "peak_rss_mb": 516.4,
+  "s_per_10k_actions": 488.6,
+  "host": "Windows-11-10.0.26200-SP0",
+  "threads": 1,
+  "system_cpu_pct_before_run": 100.0
+ },
+ "scorecard": {
+  "card_id": "d3cd4c37-05f2-4e9d-8b76-d4c557767744",
+  "score": 0.0,
+  "environments": [
+   {
+    "id": "su15-1944f8ab",
+    "runs": [
+     {
+      "guid": "eda8abca-c1c6-426e-b6c9-59a649db0257",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 0,
+      "resets": 0,
+      "state": "NOT_FINISHED",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       22,
+       42,
+       26,
+       115,
+       36,
+       31,
+       8,
+       40,
+       41
+      ]
+     },
+     {
+      "guid": "eda8abca-c1c6-426e-b6c9-59a649db0257",
+      "score": 0.0,
+      "levels_completed": 0,
+      "actions": 1500,
+      "resets": 36,
+      "state": "GAME_OVER",
+      "completed": false,
+      "level_scores": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "level_actions": [
+       1500,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "level_baseline_actions": [
+       22,
+       42,
+       26,
+       115,
+       36,
+       31,
+       8,
+       40,
+       41
+      ]
+     }
+    ],
+    "score": 0.0,
+    "actions": 1500,
+    "levels_completed": 0,
+    "completed": false,
+    "level_count": 9,
+    "resets": 36
+   }
+  ],
+  "tags_scores": [
+   {
+    "id": "click",
+    "score": 0.0,
+    "levels_completed": 0,
+    "actions": 0,
+    "number_of_levels": 9,
+    "number_of_environments": 1
+   }
+  ],
+  "total_environments_completed": 0,
+  "total_environments": 1,
+  "total_levels_completed": 0,
+  "total_levels": 9,
+  "total_actions": 1500
+ }
+}
