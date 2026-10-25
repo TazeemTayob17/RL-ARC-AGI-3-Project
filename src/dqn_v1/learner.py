@@ -11,7 +11,9 @@ import torch
 
 from ..adapter import N_SIMPLE, SIMPLE_IDS, Observation, Transition, action_to_index, index_to_action
 from ..intrinsic import NoveltyCounter, option_bonus
+from ..objects import EffectMemory, build_view
 from .action_bank import ActionKey
+from .object_actions import build_action_set
 from .agent import DQNAgent
 from .exploration import SELECTOR, StructuredExplorer
 from .prior import load_prior, state_outputs
@@ -59,9 +61,12 @@ class DQNV1:
         self.checkpoint, self.fold = Path(prior_path), int(fold)
         self.seed_offset, self.deployment = int(seed_offset), bool(deployment)
         self.novelty = NoveltyCounter(float(self.p.get("intrinsic_beta", 0.0)))
+        self.objects_on = bool(self.p.get("object_clicks", False))               # I3: click objects, not pixels
+        self.memory = EffectMemory(bool(self.p.get("effect_memory", True)) and self.objects_on)
 
     def _cfg(self):
         return {
+            "object_actions": self.objects_on,
             "click_action_id": 6,
             "click_size": 64,
             "max_action_id": 7,
@@ -81,6 +86,8 @@ class DQNV1:
         self.agent = DQNAgent(130, self.system, self._cfg(), run_seed + 17, self.device)
         self.pending = None
         self._feat_cache = None
+        self._set_cache = None
+        self.memory.reset(self.seed)
         self.last_label = None
         self.since_progress = 0
 
@@ -101,45 +108,73 @@ class DQNV1:
         self._feat_cache = (key, out)
         return out
 
+    def _action_set(self, obs: Observation, available):
+        """Choice set of an observation. The outcome of one step is the input of the next, so the last set is kept:
+        the set the learner trains on is the set it acted on."""
+        key = (obs.frame.tobytes(), obs.progress, obs.mask.tobytes(), self.memory.n_recorded)   # memory changed -> rebuild
+        if self._set_cache is not None and self._set_cache[0] == key:
+            return self._set_cache[1]
+        view = build_view(obs.frame, obs.progress, self.memory) if 6 in available else None
+        oset = build_action_set(self.agent.bank, available, view, self.memory)
+        self._set_cache = (key, oset)
+        return oset
+
     def act(self, obs: Observation) -> int:
         state, emb, simple, simple_logits, a6_logits, available = self._features(obs)
 
-        def explore_fn(rng, action_index):
-            return self.explorer.choose(rng, available, obs.frame, simple, simple_logits, a6_logits)
+        oset = self._action_set(obs, available) if self.objects_on else None
 
-        action, label = self.agent.act(state, available, explore_fn=explore_fn)
+        def explore_fn(rng, action_index):
+            return self.explorer.choose(rng, available, obs.frame, simple, simple_logits, a6_logits, oset)
+
+        action, label = self.agent.act(state, available, explore_fn=explore_fn, cand_set=oset)
         self.explorer.observe(obs.frame, action)  # counts greedy actions too, matching the selected experiment
         idx = _to_index(action)
-        self.pending = (state, tuple(available), action, idx)
+        self.pending = (state, tuple(available), action, idx, oset)
         self.last_label = label
         return idx
 
     def observe(self, t: Transition) -> None:
         if self.pending is None:
             raise RuntimeError("observe() called without a pending V1 action")
-        state, available, action, idx = self.pending
+        state, available, action, idx, oset = self.pending
         if int(t.action) != int(idx):
             raise AssertionError(("V1 pending action mismatch", idx, t.action))
+        if oset is not None:
+            self._record_effect(oset, action, t)
 
         reward = float(t.reward)
         if t.info.get("state") == "WIN" and reward == 0.0:
             reward = 1.0  # exact selected-baseline reward convention
 
+        next_set = None
         if t.terminal:
             next_state = state.copy()
             next_available = tuple()
         else:
             next_state, _, _, _, _, nav = self._features(t.next_obs)
             next_available = tuple(nav)
+            if oset is not None:
+                next_set = self._action_set(t.next_obs, nav)
 
         bonus = option_bonus(self.novelty, t, float(self.p.get("gamma", 0.99)))   # I1: training signal only, kept apart from the extrinsic reward
         self.agent.observe(state, available, action, reward + bonus, next_state, next_available, bool(t.terminal),
-                           steps=int(t.info.get("k", 1)))
+                           steps=int(t.info.get("k", 1)),
+                           **({} if oset is None else {"cand": oset.rows, "chosen": oset.row_of(action),
+                                                       "next_cand": None if next_set is None else next_set.rows}))
         if reward > 0 or t.info.get("state") == "WIN":
             self.since_progress = 0
         else:
             self.since_progress += 1
         self.pending = None
+
+    def _record_effect(self, oset, action: ActionKey, t: Transition) -> None:
+        """Tell the effect memory what the object click did (frame changed or not, level up, game over)."""
+        c = oset.cands[oset.row_of(action)]
+        if c is None:
+            return
+        self.memory.record(oset.skey, c, bool(t.info.get("frame_changed")), level_up=t.reward > 0,
+                           game_over=bool(t.terminal and t.info.get("state") == "GAME_OVER"))
 
     def finish(self, final_obs: Optional[Observation]) -> None:
         self.agent.finish()
@@ -154,6 +189,8 @@ class DQNV1:
             "selector": SELECTOR["id"],
             "deployment_checkpoint": self.deployment,
             "intrinsic": self.novelty.summary(),
+            "object_clicks": self.objects_on,
+            "effect_memory": self.memory.summary() if self.objects_on else None,
             **self.agent.summary(),
         }
 

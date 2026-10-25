@@ -8,6 +8,7 @@ from collections import defaultdict
 
 import numpy as np
 
+from ..objects import component_labels
 from .action_bank import ActionKey
 
 SELECTOR = {
@@ -68,48 +69,10 @@ def _bucket(a: ActionKey):
 
 
 def _component_rarity(g: np.ndarray) -> np.ndarray:
-    """-log((size + 1) / (cells + 1)) of each cell's 4-connected same-colour component.
-
-    Row runs joined with a union-find: the component sizes, and so every value, equal those of a cell-by-cell flood fill.
-    """
-    h, w = g.shape
-    flat = g.reshape(-1)
-    change = np.ones((h, w), dtype=bool)
-    change[:, 1:] = g[:, 1:] != g[:, :-1]
-    starts = np.flatnonzero(change.reshape(-1))
-    run_of_cell = np.cumsum(change.reshape(-1)) - 1
-    length = np.diff(np.append(starts, h * w))
-    row, x0 = starts // w, starts % w
-    x1 = x0 + length
-    color = flat[starts].tolist()
-    x0l, x1l = x0.tolist(), x1.tolist()
-    row_first = np.searchsorted(row, np.arange(h + 1)).tolist()
-    parent = list(range(len(starts)))
-
-    def find(i):
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
-
-    for y in range(1, h):
-        i, i_end = row_first[y - 1], row_first[y]
-        j, j_end = row_first[y], row_first[y + 1]
-        while i < i_end and j < j_end:
-            if color[i] == color[j] and x0l[i] < x1l[j] and x0l[j] < x1l[i]:
-                ri, rj = find(i), find(j)
-                if ri != rj:
-                    parent[rj] = ri
-            if x1l[i] < x1l[j]:
-                i += 1
-            else:
-                j += 1
-    root = np.asarray([find(i) for i in range(len(starts))], dtype=np.int64)
-    size = np.bincount(root, weights=length, minlength=len(starts))
-    value = np.zeros(len(starts), dtype=np.float64)
-    for r in np.unique(root).tolist():
-        value[r] = -math.log((int(size[r]) + 1.0) / (g.size + 1.0))
-    return value[root][run_of_cell].reshape(h, w)
+    """-log((size + 1) / (cells + 1)) of each cell's 4-connected same-colour component (equals a cell-by-cell flood fill)."""
+    labels, size = component_labels(g)
+    value = np.asarray([-math.log((int(n) + 1.0) / (g.size + 1.0)) for n in size], dtype=np.float64)
+    return value[labels]
 
 
 def _visual_salience(grid: np.ndarray) -> np.ndarray:
@@ -129,18 +92,26 @@ class StructuredExplorer:
         self.structured_calls = 0
 
     def choose(self, rng: random.Random, available: list[int], grid: np.ndarray, simple: list[int],
-               prior_simple_logits: np.ndarray, prior_a6_logits: np.ndarray | None):
+               prior_simple_logits: np.ndarray, prior_a6_logits: np.ndarray | None, oset=None):
         sk = _state_key(grid)
         count_simple = np.asarray([1.0 / math.sqrt(self.pair_counts[(sk, (aid,))] + 1.0) for aid in simple])
         simple_score = 0.7 * _zscore(prior_simple_logits) + 0.7 * _zscore(count_simple)
-        a6_score = _zscore(_visual_salience(grid)).reshape(-1) if prior_a6_logits is not None else None
+        if oset is not None and prior_a6_logits is not None:
+            # I3: the click choice is one object (or the random-pixel slot) instead of one of 4,096 pixels
+            sal = _visual_salience(grid)
+            raw = np.asarray([sal[oset.keys[r].y, oset.keys[r].x] for r in oset.click_rows], dtype=np.float64)
+            raw[-1] = raw[:-1].mean() if len(raw) > 1 else raw[-1]        # the slot scores like an average object
+            a6_score, click_keys = _zscore(raw), [oset.keys[r] for r in oset.click_rows]
+        else:
+            a6_score = _zscore(_visual_salience(grid)).reshape(-1) if prior_a6_logits is not None else None
+            click_keys = None
         if a6_score is not None and simple:
             choose_a6 = rng.random() < 0.7
         else:
             choose_a6 = a6_score is not None
         if choose_a6:
             j = _sample_softmax(rng, a6_score, 0.6)
-            action = ActionKey(6, j % 64, j // 64)
+            action = click_keys[j] if click_keys is not None else ActionKey(6, j % 64, j // 64)
         else:
             i = _sample_softmax(rng, simple_score, 0.6)
             action = ActionKey(int(simple[i]))

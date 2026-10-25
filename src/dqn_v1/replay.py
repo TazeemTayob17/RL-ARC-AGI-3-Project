@@ -19,6 +19,9 @@ class StepTransition:
     next_available: tuple[int, ...]
     terminal: bool
     steps: int = 1               # primitive environment steps behind this transition (an option has k > 1)
+    cand: np.ndarray | None = None        # I3: action-feature rows offered at this state (None = the fixed action bank)
+    chosen: int = -1                      # I3: row of `cand` that was taken
+    next_cand: np.ndarray | None = None   # I3: rows offered at the next state
 
 
 @dataclass
@@ -33,6 +36,9 @@ class ReplayTransition:
     terminal: bool
     gamma_n: float
     n_steps: int
+    cand: np.ndarray | None = None
+    chosen: int = -1
+    next_cand: np.ndarray | None = None
 
 
 class NStepAccumulator:
@@ -70,6 +76,9 @@ class NStepAccumulator:
             terminal=terminal,
             gamma_n=self.gamma ** prim,
             n_steps=used,
+            cand=first.cand,
+            chosen=first.chosen,
+            next_cand=last.next_cand,
         )
 
     def append(self, t: StepTransition) -> list[ReplayTransition]:
