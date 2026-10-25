@@ -25,6 +25,7 @@ CLICK_TYPE = N_SIMPLE            # action-type index of ACTION6
 N_TYPES = N_SIMPLE + 1
 N_CLICK = GRID * GRID
 N_ACTIONS = N_SIMPLE + N_CLICK   # 4102
+OPTION_ACT = N_ACTIONS           # I4: learner-side marker for "go to frontier"; never sent to the environment
 NO_ACTION = -1                   # sentinel for "no previous action" after a reset
 TERMINAL_STATES = ("GAME_OVER", "WIN")
 
@@ -128,6 +129,7 @@ class Observation:
     progress: int                # levels_completed reported now
     high_water: int              # max progress reached so far in this run (never reset)
     win_levels: int
+    option_ok: bool = False      # I4: set only by the frontier wrapper (src/frontier.py): "go to frontier" is a legal choice now
 
 
 @dataclass
