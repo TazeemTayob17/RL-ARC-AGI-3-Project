@@ -16,9 +16,15 @@ from .runtime_guard import learner_section, summary as runtime_guard_summary
 
 
 def build_learner(cfg: RunConfig) -> Learner:
-    """Base learner, wrapped by the Improvement 2 repeat option when the config sets `option_cap`."""
+    """Base learner, wrapped by the Improvement 2 repeat option when the config sets `option_cap`, or by the Improvement 4
+    frontier option when it sets `frontier_mode` (learned | forced | off)."""
     c = cfg.resolved()
     learner = _base_learner(c)
+    if c.params.get("frontier_mode"):
+        if int(c.params.get("option_cap", 0)) > 0:
+            raise ValueError("the repeat option (I2) and the frontier option (I4) are not combined")
+        from .frontier import FrontierOption
+        return FrontierOption(learner, mode=str(c.params["frontier_mode"]), gamma=float(c.params.get("gamma", 0.99)))
     if int(c.params.get("option_cap", 0)) > 0:
         from .options import EventRepeat
         learner = EventRepeat(learner, cap=int(c.params["option_cap"]), prob=float(c.params.get("option_prob", 0.5)),

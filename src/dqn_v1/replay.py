@@ -22,6 +22,7 @@ class StepTransition:
     cand: np.ndarray | None = None        # I3: action-feature rows offered at this state (None = the fixed action bank)
     chosen: int = -1                      # I3: row of `cand` that was taken
     next_cand: np.ndarray | None = None   # I3: rows offered at the next state
+    next_opt: bool = False                # I4 without object rows: the frontier option is legal at the next state
 
 
 @dataclass
@@ -39,6 +40,7 @@ class ReplayTransition:
     cand: np.ndarray | None = None
     chosen: int = -1
     next_cand: np.ndarray | None = None
+    next_opt: bool = False
 
 
 class NStepAccumulator:
@@ -79,6 +81,7 @@ class NStepAccumulator:
             cand=first.cand,
             chosen=first.chosen,
             next_cand=last.next_cand,
+            next_opt=last.next_opt,
         )
 
     def append(self, t: StepTransition) -> list[ReplayTransition]:
