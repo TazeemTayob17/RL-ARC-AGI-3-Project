@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from torch import nn
 
+from ..objects import FEAT_DIM
 from .action_bank import ActionBank, ActionKey
 from .qnet import ActionValueNetwork, QNetConfig, c51_project
 from .replay import NStepAccumulator, ReplayBuffer, StepTransition
@@ -51,7 +52,7 @@ class DQNAgent:
         self.bank = ActionBank(cfg["click_action_id"], cfg["click_size"], max_action_id=int(cfg.get("max_action_id", 7)))
         qcfg = QNetConfig(
             state_dim=state_dim,
-            action_dim=self.bank.action_dim,
+            action_dim=self.bank.action_dim + (FEAT_DIM if cfg.get("object_actions") else 0),
             hidden_dim=int(self.tcfg["hidden_dim"]),
             dueling=bool(system.get("dueling", False)),
             distributional=bool(system.get("distributional", False)),
@@ -112,7 +113,8 @@ class DQNAgent:
             return ActionKey(int(aid), rng.randrange(self.bank.click_size), rng.randrange(self.bank.click_size))
         return ActionKey(int(aid))
 
-    def act(self, state: np.ndarray, available: list[int], explore_fn=None) -> tuple[ActionKey, str]:
+    def act(self, state: np.ndarray, available: list[int], explore_fn=None, cand_set=None) -> tuple[ActionKey, str]:
+        """`cand_set` (I3) is the per-state choice set (keys + feature rows); without it the fixed action bank is used."""
         t0 = time.perf_counter()
         if not available:
             raise ValueError("No legal actions")
@@ -134,7 +136,12 @@ class DQNAgent:
             else:
                 self.stats.epsilon_uniform_actions += 1
         else:
-            keys, q = self.q_values(state, available, target=False)
+            if cand_set is None:
+                keys, q = self.q_values(state, available, target=False)
+            else:
+                keys = cand_set.keys
+                with torch.no_grad():
+                    q = self.online.q_values(self._to(state), self._to(cand_set.rows))
             a = keys[int(torch.argmax(q).item())]
             label = "greedy"
             self.stats.greedy_actions += 1
@@ -152,6 +159,9 @@ class DQNAgent:
         next_available: tuple[int, ...],
         terminal: bool,
         steps: int = 1,
+        cand: np.ndarray | None = None,
+        chosen: int = -1,
+        next_cand: np.ndarray | None = None,
     ) -> None:
         step = StepTransition(
             state=np.asarray(state, dtype=np.float32).copy(),
@@ -163,6 +173,9 @@ class DQNAgent:
             next_available=tuple(int(x) for x in next_available),
             terminal=bool(terminal),
             steps=int(steps),
+            cand=cand,
+            chosen=int(chosen),
+            next_cand=next_cand,
         )
         for t in self.nstep.append(step):
             self.replay.add(t)
@@ -191,6 +204,8 @@ class DQNAgent:
         raise KeyError((action_key, keys[:8], len(keys)))
 
     def _current_scalar_q(self, t) -> torch.Tensor:
+        if t.cand is not None:
+            return self.online.q_values(self._to(t.state), self._to(t.cand))[t.chosen]
         keys, acts_np = self.bank.encode_candidates(t.available)
         if not keys:
             raise ValueError("Replay transition has no current legal actions")
@@ -207,7 +222,7 @@ class DQNAgent:
     def _next_value_scalar(self, t) -> torch.Tensor:
         if t.terminal or not t.next_available:
             return torch.tensor(0.0, device=self.device)
-        keys, acts_np = self.bank.encode_candidates(t.next_available)
+        acts_np = t.next_cand if t.cand is not None else self.bank.encode_candidates(t.next_available)[1]
         acts = self._to(acts_np)
         state = self._to(t.next_state)
         with torch.no_grad():
