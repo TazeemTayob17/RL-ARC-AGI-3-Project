@@ -16,7 +16,7 @@ from .action_bank import ActionKey
 from .object_actions import OPTION_KEY, build_action_set
 from .agent import DQNAgent
 from .exploration import SELECTOR, StructuredExplorer
-from .prior import load_prior, state_outputs
+from .prior import load_prior, random_prior, state_outputs
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -79,7 +79,8 @@ class DQNV1:
 
     def start_run(self, seed: int) -> None:
         self.seed = int(seed)
-        self.prior = load_prior(self.checkpoint, self.device)
+        self.prior_random = self.p.get("prior_mode") == "random"             # ablation: no pretrained prior
+        self.prior = random_prior(self.device) if self.prior_random else load_prior(self.checkpoint, self.device)
         self.novelty.reset()
         run_seed = self.seed * 100003 + self.seed_offset
         random.seed(run_seed); np.random.seed(run_seed & 0xFFFFFFFF); torch.manual_seed(run_seed)
@@ -106,6 +107,8 @@ class DQNV1:
         emb, simple, simple_logits, a6_logits = state_outputs(
             self.prior, obs.frame, obs.prev_frame, available, self.device
         )
+        if self.prior_random:
+            simple_logits = np.zeros_like(simple_logits)         # a random head has no preference worth following
         state = np.concatenate([
             emb.reshape(-1),
             np.asarray([obs.progress / 5.0, obs.high_water / 5.0], dtype=np.float32),
@@ -196,7 +199,7 @@ class DQNV1:
             "version": "V1",
             "selected_system": SYSTEM["id"],
             "fold": self.fold,
-            "prior_checkpoint": str(self.checkpoint.relative_to(ROOT)),
+            "prior_checkpoint": "none (random frozen encoder)" if self.prior_random else str(self.checkpoint.relative_to(ROOT)),
             "selector": SELECTOR["id"],
             "deployment_checkpoint": self.deployment,
             "intrinsic": self.novelty.summary(),
@@ -214,7 +217,8 @@ class DQNV1:
             "action_representation": "shared 10-D action vector over the legal action set",
             "auxiliary_objectives": ["frozen binary action-effect prior"],
             "memory": "downsample16 state-action counts inside structured epsilon exploration",
-            "checkpoint_mode": "public cross-fold, seed-11 prior (faithful final-ablation reproduction)",
+            "checkpoint_mode": ("random frozen encoder, no pretraining" if self.prior_random else
+                                "public cross-fold, seed-11 prior (faithful final-ablation reproduction)"),
         }
 
     def state_dict(self) -> dict:
